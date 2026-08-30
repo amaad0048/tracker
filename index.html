@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Earning & Expense Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --f:'DM Sans',sans-serif;--fm:'DM Mono',monospace;
+  --bg:#0b0f1a;--s0:#111827;--s1:#161f30;--s2:#1d2942;--s3:#243354;
+  --b0:#1e2d47;--b1:#253656;--b2:#2d4168;
+  --t0:#f0f4ff;--t1:#a8b8d8;--t2:#5a7099;--t3:#354d6e;
+  --vi:#7c3aed;--vi2:#8b5cf6;--vi3:#a78bfa;--vi4:rgba(124,58,237,.15);--vi5:rgba(124,58,237,.08);
+  --mn:#00d4aa;--mn2:#00f5c4;--mn3:rgba(0,212,170,.12);--mn4:rgba(0,212,170,.06);
+  --rs:#f43f5e;--rs2:#fb7185;--rs3:rgba(244,63,94,.12);
+  --am:#f59e0b;--am2:#fbbf24;--am3:rgba(245,158,11,.12);
+  --sk:#0ea5e9;--sk2:#38bdf8;--sk3:rgba(14,165,233,.12);
+  --ease:cubic-bezier(.22,1,.36,1);--tr:.18s var(--ease);--r:10px;--r2:16px;--r3:22px;
+}
+[data-theme="light"]{
+  --bg:#f4f6fb;--s0:#ffffff;--s1:#f8fafd;--s2:#eef2fb;--s3:#e4eaf7;
+  --b0:#dce4f5;--b1:#c8d6ef;--b2:#b4c4e7;--t0:#0f172a;--t1:#334155;--t2:#64748b;--t3:#94a3b8;
+  --vi4:rgba(124,58,237,.08);--vi5:rgba(124,58,237,.04);
+  --mn3:rgba(0,212,170,.08);--mn4:rgba(0,212,170,.04);--rs3:rgba(244,63,94,.08);
+  --am3:rgba(245,158,11,.08);--sk3:rgba(14,165,233,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--t0);font-family:var(--f);font-size:13px;line-height:1.5;display:flex;flex-direction:column}
+button{cursor:pointer;font-family:var(--f);border:none;background:none}
+input,select{font-family:var(--f)}
+a{color:var(--vi3);text-decoration:none}
+
+/* ── TOPBAR ── */
+.topbar{height:54px;min-height:54px;display:flex;align-items:center;
+  background:var(--s0);border-bottom:1px solid var(--b0);position:relative;z-index:200}
+.topbar::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--vi2) 40%,var(--mn) 60%,transparent);opacity:.5}
+.tb-logo{width:210px;min-width:210px;display:flex;align-items:center;gap:10px;
+  padding:0 18px;border-right:1px solid var(--b0);height:100%;flex-shrink:0}
+.tb-gem{width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--vi),var(--mn));display:flex;align-items:center;justify-content:center;font-size:14px}
+.tb-name{font-size:13px;font-weight:700;color:var(--t0);letter-spacing:-.2px;line-height:1.2}
+.tb-name span{display:block;font-size:9px;font-weight:500;color:var(--t2);letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.ticker{flex:1;overflow:hidden;padding:0 16px;
+  mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+  -webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.t-inner{display:flex;gap:32px;white-space:nowrap;width:max-content;animation:slide 40s linear infinite}
+.t-inner:hover{animation-play-state:paused}
+@keyframes slide{to{transform:translateX(-50%)}}
+.t-item{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:10.5px}
+.t-lbl{color:var(--t2)}.t-val{font-weight:500;color:var(--t1)}.t-up{color:var(--mn)}.t-dn{color:var(--rs2)}
+.tb-right{display:flex;align-items:center;gap:8px;padding:0 16px;flex-shrink:0}
+.theme-pill{display:flex;background:var(--s2);border:1px solid var(--b0);border-radius:20px;padding:3px;gap:2px}
+.th-btn{padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;color:var(--t2);transition:var(--tr)}
+.th-btn.on{background:var(--s3);color:var(--t0)}
+[data-theme="light"] .th-btn.on{background:var(--s0);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.st-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+  border-radius:20px;font-size:11px;font-weight:500;background:var(--s2);border:1px solid var(--b0);color:var(--t2)}
+.pip{width:6px;height:6px;border-radius:50%;background:var(--rs);flex-shrink:0;transition:.3s}
+.pip.on{background:var(--mn);box-shadow:0 0 0 2px var(--mn3);animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--r);
+  font-size:12px;font-weight:600;transition:var(--tr);white-space:nowrap;border:1px solid transparent}
+.btn:hover{transform:translateY(-1px)}.btn:active{transform:none}
+.btn-vi{background:linear-gradient(135deg,var(--vi),var(--vi2));color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.35)}
+.btn-mn{background:linear-gradient(135deg,#00b890,var(--mn));color:#0b1a14;box-shadow:0 4px 16px rgba(0,212,170,.3)}
+.btn-rs{background:linear-gradient(135deg,#d42a4a,var(--rs));color:#fff;box-shadow:0 4px 16px rgba(244,63,94,.3)}
+.btn-sk{background:linear-gradient(135deg,#0284c7,var(--sk));color:#fff;box-shadow:0 4px 16px rgba(14,165,233,.3)}
+.btn-am{background:linear-gradient(135deg,#d97706,var(--am));color:#fff;box-shadow:0 4px 16px rgba(245,158,11,.3)}
+.btn-ghost{background:transparent;border-color:var(--b0);color:var(--t2)}
+.btn-ghost:hover{border-color:var(--vi2);color:var(--vi3);background:var(--vi5)}
+.btn-sm{padding:5px 12px;font-size:11px}.btn-xs{padding:3px 9px;font-size:10px;font-weight:700;border-radius:7px}
+
+/* ── LAYOUT ── */
+.shell{display:flex;flex:1;overflow:hidden;height:calc(100vh - 54px)}
+
+/* ── SIDEBAR ── */
+.sidebar{width:210px;min-width:210px;background:var(--s0);border-right:1px solid var(--b0);
+  display:flex;flex-direction:column;overflow-y:auto;padding:12px 8px}
+.sb-sec{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--t3);padding:12px 10px 4px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);
+  cursor:pointer;font-size:12.5px;font-weight:500;color:var(--t2);transition:var(--tr);
+  position:relative;margin-bottom:1px}
+.sb-item:hover{background:var(--vi5);color:var(--t0)}
+.sb-item.on{background:var(--vi4);color:var(--vi3);font-weight:700}
+.sb-item.on::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;
+  background:linear-gradient(var(--vi),var(--mn));border-radius:0 2px 2px 0}
+.sb-ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;font-family:var(--fm);
+  padding:2px 7px;border-radius:20px;background:var(--s2);color:var(--t2);
+  border:1px solid var(--b0);min-width:22px;text-align:center}
+.sb-badge.hot{background:var(--vi4);color:var(--vi3);border-color:rgba(124,58,237,.3)}
+.sb-hr{height:1px;background:var(--b0);margin:8px 4px}
+.sb-foot{margin-top:auto;padding:12px 10px 4px;font-size:10px;color:var(--t3);font-family:var(--fm)}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+.page{display:none;padding:24px;flex-direction:column;gap:20px;animation:fin .2s var(--ease)}
+.page.on{display:flex}
+@keyframes fin{from{opacity:0;transform:translateY(8px)}}
+
+/* ── LOADING OVERLAY ── */
+#loader{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .4s;
+}
+#loader.hide{opacity:0;pointer-events:none}
+.spinner{width:36px;height:36px;border:3px solid var(--b1);border-top-color:var(--vi2);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-size:13px;color:var(--t2);font-family:var(--fm)}
+.load-sub{font-size:11px;color:var(--t3);font-family:var(--fm)}
+
+/* ── PAGE HEADER ── */
+.ph{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:4px}
+.ph-l .ph-title{font-size:20px;font-weight:800;color:var(--t0);letter-spacing:-.4px;line-height:1}
+.ph-l .ph-sub{font-size:12px;color:var(--t2);margin-top:4px}
+.ph-r{display:flex;gap:8px;align-items:center}
+
+/* ── SUMMARY BAR ── */
+.sum-bar{background:var(--s1);border:1px solid var(--b0);border-radius:var(--r3);
+  padding:20px 28px;display:flex;align-items:center;position:relative;overflow:hidden}
+.sum-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--vi),var(--mn),var(--sk),var(--am),var(--rs))}
+.sum-seg{flex:1;padding:0 24px;border-right:1px solid var(--b0);display:flex;flex-direction:column;gap:4px}
+.sum-seg:first-child{padding-left:0}.sum-seg:last-child{border-right:none;padding-right:0}
+.sum-lbl{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t2)}
+.sum-val{font-family:var(--fm);font-size:22px;font-weight:700;letter-spacing:-.5px;line-height:1}
+.sum-sub{font-size:10px;color:var(--t2);font-family:var(--fm)}
+.c-mn{color:var(--mn)}.c-rs{color:var(--rs2)}.c-sk{color:var(--sk2)}.c-am{color:var(--am2)}.c-vi{color:var(--vi3)}
+
+/* ── GRIDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g32{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.g23{display:grid;grid-template-columns:1fr 2fr;gap:16px}
+.kpi3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+/* ── KPI CARDS ── */
+.kpi{background:var(--s1);border:1px solid var(--b0);border-radius:var(--r2);
+  padding:18px 20px;position:relative;overflow:hidden;transition:var(--tr)}
+.kpi:hover{transform:translateY(-2px);border-color:var(--b1)}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r2) 0 0 var(--r2)}
+.kpi.mn::before{background:linear-gradient(var(--mn),#00b890)}.kpi.mn:hover{box-shadow:0 8px 28px rgba(0,212,170,.12)}
+.kpi.rs::before{background:linear-gradient(var(--rs),#c4304a)}.kpi.rs:hover{box-shadow:0 8px 28px rgba(244,63,94,.12)}
+.kpi.sk::before{background:linear-gradient(var(--sk),#0284c7)}.kpi.sk:hover{box-shadow:0 8px 28px rgba(14,165,233,.12)}
+.kpi.am::before{background:linear-gradient(var(--am),#d97706)}.kpi.am:hover{box-shadow:0 8px 28px rgba(245,158,11,.12)}
+.kpi.vi::before{background:linear-gradient(var(--vi),var(--vi2))}.kpi.vi:hover{box-shadow:0 8px 28px rgba(124,58,237,.12)}
+.kpi-glow{position:absolute;top:-30px;right:-30px;width:90px;height:90px;border-radius:50%;opacity:.07}
+.kpi.mn .kpi-glow{background:var(--mn)}.kpi.rs .kpi-glow{background:var(--rs)}
+.kpi.sk .kpi-glow{background:var(--sk)}.kpi.am .kpi-glow{background:var(--am)}.kpi.vi .kpi-glow{background:var(--vi)}
+.kpi-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:10px}
+.kpi-val{font-family:var(--fm);font-size:21px;font-weight:700;letter-spacing:-.3px;line-height:1;margin-bottom:5px}
+.kpi-sub{font-size:10px;color:var(--t2);font-family:var(--fm)}
+
+/* ── PANELS ── */
+.panel{background:var(--s1);border:1px solid var(--b0);border-radius:var(--r2);overflow:hidden}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--b0)}
+.panel-title{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--t1);display:flex;align-items:center;gap:8px}
+.prow{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 18px;border-bottom:1px solid var(--b0);font-size:12px;transition:background .12s}
+.prow:last-child{border-bottom:none}.prow:hover{background:rgba(255,255,255,.02)}
+.prow-l{display:flex;align-items:center;gap:10px;color:var(--t2)}
+.prow-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.prow-r{font-family:var(--fm);font-weight:600;color:var(--t0)}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--s1);border:1px solid var(--b0);border-radius:var(--r2);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--s2);position:sticky;top:0;z-index:2}
+th{padding:10px 14px;text-align:left;font-size:9.5px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--t3);
+  border-bottom:1px solid var(--b0);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--b0);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(124,58,237,.04)}
+td{padding:11px 14px;font-size:12px;vertical-align:middle;color:var(--t0)}
+.r{text-align:right}.c{text-align:center}.mono{font-family:var(--fm)}
+.ra{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+tbody tr:hover .ra{opacity:1}
+.ra-btn{border:1px solid transparent;border-radius:7px;padding:3px 9px;font-size:10px;font-weight:600;transition:.15s;background:none;font-family:var(--f)}
+.ra-e{color:var(--vi3)}.ra-e:hover{background:var(--vi4);border-color:rgba(124,58,237,.3)}
+.ra-d{color:var(--rs2)}.ra-d:hover{background:var(--rs3);border-color:rgba(244,63,94,.3)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.02em}
+.bm{background:var(--mn3);color:var(--mn);border:1px solid rgba(0,212,170,.2)}
+.br{background:var(--rs3);color:var(--rs2);border:1px solid rgba(244,63,94,.2)}
+.bs{background:var(--sk3);color:var(--sk2);border:1px solid rgba(14,165,233,.2)}
+.ba{background:var(--am3);color:var(--am2);border:1px solid rgba(245,158,11,.2)}
+.bv{background:var(--vi4);color:var(--vi3);border:1px solid rgba(124,58,237,.2)}
+.bd{background:var(--s2);color:var(--t2);border:1px solid var(--b0)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:52px 20px}
+.empty-ico{font-size:36px;margin-bottom:14px;opacity:.3;display:block}
+.empty-t{font-size:14px;font-weight:700;color:var(--t0);margin-bottom:5px}
+.empty-s{font-size:12px;color:var(--t2)}
+
+/* ── SECTION ── */
+.sec{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t2);display:flex;align-items:center;gap:8px}
+.sec-t::before{content:'';width:3px;height:13px;border-radius:2px;background:linear-gradient(var(--vi),var(--mn))}
+
+/* ── BAR CHART ── */
+.cat-bars{padding:14px 18px;display:flex;flex-direction:column;gap:13px}
+.cb-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:11px}
+.cb-lbl{color:var(--t2);font-weight:500}.cb-val{font-family:var(--fm);font-weight:700;color:var(--t0)}
+.cb-pct{font-size:9px;color:var(--t3);font-family:var(--fm);margin-left:5px}
+.cb-track{height:5px;background:var(--s3);border-radius:10px;overflow:hidden}
+.cb-fill{height:100%;border-radius:10px;transition:width .7s var(--ease)}
+
+/* ── MODAL ── */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:800;align-items:center;justify-content:center}
+.ov.on{display:flex}
+.modal{background:var(--s0);border:1px solid var(--b0);border-radius:var(--r3);
+  width:500px;max-width:95vw;max-height:92vh;overflow-y:auto;
+  box-shadow:0 40px 100px rgba(0,0,0,.55);animation:mopen .22s var(--ease)}
+@keyframes mopen{from{opacity:0;transform:translateY(16px) scale(.97)}}
+.mhd{padding:22px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.mhd-l{display:flex;align-items:center;gap:12px}
+.mhd-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.mhd-ico.mn{background:var(--mn3)}.mhd-ico.rs{background:var(--rs3)}.mhd-ico.sk{background:var(--sk3)}.mhd-ico.am{background:var(--am3)}
+.mhd-t{font-size:16px;font-weight:800;color:var(--t0);letter-spacing:-.3px}
+.mhd-s{font-size:11px;color:var(--t2);margin-top:2px}
+.mhd-close{width:30px;height:30px;border-radius:9px;background:var(--s2);border:1px solid var(--b0);
+  display:flex;align-items:center;justify-content:center;color:var(--t2);font-size:14px;cursor:pointer;transition:var(--tr);flex-shrink:0}
+.mhd-close:hover{background:var(--rs3);border-color:rgba(244,63,94,.4);color:var(--rs2)}
+.mbody{padding:0 24px 8px}
+.mfoot{padding:16px 24px 20px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--b0);margin-top:12px}
+
+/* ── FORM ── */
+.fg{margin-bottom:14px}.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+label{display:block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);margin-bottom:5px}
+input,select{width:100%;background:var(--bg);border:1px solid var(--b0);border-radius:var(--r);
+  color:var(--t0);padding:9px 12px;font-size:13px;outline:none;transition:.15s;font-family:var(--f)}
+input:focus,select:focus{border-color:var(--vi2);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+input[readonly]{color:var(--mn);background:var(--mn4);border-color:rgba(0,212,170,.3);font-family:var(--fm);cursor:default}
+select option{background:var(--s1)}
+.fhint{font-size:10px;color:var(--t2);margin-top:4px;font-style:italic}
+.fcw{display:none;margin-top:8px;background:var(--s2);border:1px solid var(--b0);border-radius:var(--r);padding:10px}
+.fcr{display:flex;gap:8px}
+.fcr input{flex:1;padding:6px 10px;font-size:12px}
+.fadd{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;background:var(--vi4);
+  border:1px solid rgba(124,58,237,.3);color:var(--vi3);cursor:pointer;white-space:nowrap;transition:var(--tr);font-family:var(--f)}
+.fadd:hover{background:rgba(124,58,237,.25)}
+
+/* ── CONNECT PAGE ── */
+.conn{max-width:680px}
+.step-card{background:var(--s1);border:1px solid var(--b0);border-radius:var(--r2);
+  padding:20px;display:flex;gap:16px;margin-bottom:12px}
+.step-n{width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--b0);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;
+  font-family:var(--fm);color:var(--vi3);flex-shrink:0}
+.step-n.done{background:var(--mn3);border-color:var(--mn);color:var(--mn)}
+.step-body{flex:1}.step-t{font-size:13px;font-weight:700;margin-bottom:5px;color:var(--t0)}
+.step-d{font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:10px}
+.code-bx{background:var(--bg);border:1px solid var(--b0);border-radius:var(--r);
+  padding:12px;font-family:var(--fm);font-size:9.5px;color:var(--mn);
+  max-height:140px;overflow-y:auto;line-height:1.8;position:relative;word-break:break-all}
+.cp-btn{position:absolute;top:8px;right:8px;background:var(--s2);border:1px solid var(--b0);
+  border-radius:6px;color:var(--t2);font-size:9px;font-weight:700;padding:3px 8px;cursor:pointer;font-family:var(--f)}
+.cp-btn:hover{color:var(--t0)}
+.sync-si{display:flex;align-items:center;gap:10px;padding:12px 16px;
+  background:var(--s1);border:1px solid var(--b0);border-radius:var(--r2);margin-bottom:16px;font-size:12px;color:var(--t2)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;right:22px;z-index:9999;display:flex;align-items:center;gap:10px;
+  background:var(--s1);border:1px solid var(--b0);border-radius:var(--r2);
+  padding:12px 18px;font-size:12px;transform:translateY(70px);opacity:0;transition:.3s var(--ease);
+  box-shadow:0 16px 48px rgba(0,0,0,.4);max-width:320px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.mn{border-color:rgba(0,212,170,.5);color:var(--mn)}
+#toast.rs{border-color:rgba(244,63,94,.5);color:var(--rs2)}
+#toast.vi{border-color:rgba(124,58,237,.5);color:var(--vi3)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b1);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--b2)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:920px){
+  .g3,.g32,.g23{grid-template-columns:1fr}
+  .kpi3,.kpi4{grid-template-columns:1fr 1fr}
+  .sum-bar{flex-direction:column;gap:16px}
+  .sum-seg{border-right:none;border-bottom:1px solid var(--b0);padding:0 0 16px}
+  .sum-seg:last-child{border-bottom:none;padding-bottom:0}
+  .sidebar{width:54px;min-width:54px;padding:8px 6px}
+  .sb-item span:not(.sb-ico),.sb-badge,.sb-sec,.sb-foot{display:none}
+  .sb-ico{width:100%;text-align:center}
+}
+@media(max-width:600px){.kpi3,.kpi4,.g2{grid-template-columns:1fr}.main .page{padding:14px}}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <div class="spinner"></div>
+  <div class="load-txt">Loading your data…</div>
+  <div class="load-sub" id="load-sub">Connecting to Google Sheets</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo">
+    <div class="tb-gem">💎</div>
+    <div class="tb-name">Earning & Expense<span>Tracker · Amaad</span></div>
+  </div>
+  <div class="ticker"><div class="t-inner" id="tickerEl"></div></div>
+  <div class="tb-right">
+    <div class="theme-pill">
+      <button class="th-btn" onclick="setTheme('dark')">🌙 Dark</button>
+      <button class="th-btn" onclick="setTheme('light')">☀️ Light</button>
+    </div>
+    <div class="st-pill"><div class="pip" id="pip"></div><span id="syncLbl">Not connected</span></div>
+    <button class="btn btn-ghost btn-sm" onclick="go('connect')">⚙</button>
+    <button class="btn btn-vi btn-sm" id="syncBtn" onclick="manualRefresh()">↻ Refresh</button>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+<div class="sidebar">
+  <div class="sb-sec">Menu</div>
+  <div class="sb-item on" data-p="dashboard" onclick="go('dashboard')"><span class="sb-ico">🏠</span><span>Dashboard</span></div>
+  <div class="sb-hr"></div>
+  <div class="sb-sec">Finances</div>
+  <div class="sb-item" data-p="payouts" onclick="go('payouts')"><span class="sb-ico">💰</span><span>Payouts</span><span class="sb-badge hot" id="nb-p">0</span></div>
+  <div class="sb-item" data-p="binance" onclick="go('binance')"><span class="sb-ico">🔶</span><span>Binance</span><span class="sb-badge" id="nb-b">0</span></div>
+  <div class="sb-item" data-p="expenses" onclick="go('expenses')"><span class="sb-ico">💸</span><span>Expenses</span><span class="sb-badge" id="nb-e">0</span></div>
+  <div class="sb-item" data-p="investments" onclick="go('investments')"><span class="sb-ico">📈</span><span>Investments</span><span class="sb-badge" id="nb-i">0</span></div>
+  <div class="sb-hr"></div>
+  <div class="sb-sec">Settings</div>
+  <div class="sb-item" data-p="connect" onclick="go('connect')"><span class="sb-ico">🔗</span><span>Connect</span></div>
+  <div class="sb-foot">v4 · EET</div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page on" id="page-dashboard">
+  <div class="ph"><div class="ph-l"><div class="ph-title">Good day, Amaad 👋</div><div class="ph-sub">Your complete financial snapshot — live from Google Sheets</div></div></div>
+  <div class="sum-bar">
+    <div class="sum-seg"><div class="sum-lbl">Total Earned</div><div class="sum-val c-mn" id="sb-earned">₨ 0</div><div class="sum-sub" id="sb-earned-u">$ 0.00 USD</div></div>
+    <div class="sum-seg"><div class="sum-lbl">Withdrawn to Bank</div><div class="sum-val c-sk" id="sb-with">₨ 0</div><div class="sum-sub" id="sb-with-u">0.00 USDT</div></div>
+    <div class="sum-seg"><div class="sum-lbl">Total Spent</div><div class="sum-val c-rs" id="sb-spent">₨ 0</div><div class="sum-sub" id="sb-spent-u">$ 0.00 equiv</div></div>
+    <div class="sum-seg"><div class="sum-lbl">Net Balance</div><div class="sum-val" id="sb-bal">₨ 0</div><div class="sum-sub">Withdrawn − Expenses</div></div>
+    <div class="sum-seg"><div class="sum-lbl">Total Invested</div><div class="sum-val c-am" id="sb-inv">₨ 0</div><div class="sum-sub" id="sb-inv-c">0 assets</div></div>
+  </div>
+  <div class="g32">
+    <div>
+      <div class="sec"><div class="sec-t">Recent Payouts</div><button class="btn btn-ghost btn-xs" onclick="go('payouts')">View all →</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>Platform</th><th class="r">USD</th><th class="r">PKR Received</th></tr></thead>
+        <tbody id="d-pays"><tr><td colspan="4"><div class="empty"><span class="empty-s">No payouts yet</span></div></td></tr></tbody>
+      </table></div>
+    </div>
+    <div>
+      <div class="sec"><div class="sec-t">Binance Wallet</div></div>
+      <div class="panel">
+        <div class="prow"><div class="prow-l"><div class="prow-ico" style="background:var(--mn3)">💹</div>Total earned</div><div class="prow-r c-mn" id="d-b-earn">0.00 USDT</div></div>
+        <div class="prow"><div class="prow-l"><div class="prow-ico" style="background:var(--sk3)">🏦</div>Withdrawn</div><div class="prow-r c-sk" id="d-b-with">0.00 USDT</div></div>
+        <div class="prow"><div class="prow-l"><div class="prow-ico" style="background:var(--s2)">🔒</div>Still in Binance</div><div class="prow-r" id="d-b-rem">0.00 USDT</div></div>
+        <div class="prow"><div class="prow-l"><div class="prow-ico" style="background:var(--am3)">📊</div>Est. PKR value</div><div class="prow-r c-am" id="d-b-pkr">₨ 0</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="g23">
+    <div>
+      <div class="sec"><div class="sec-t">Spending by Category</div><button class="btn btn-ghost btn-xs" onclick="go('expenses')">View all →</button></div>
+      <div class="panel"><div id="d-cats" class="cat-bars"><div class="empty" style="padding:14px 0"><span class="empty-s">No expenses yet</span></div></div></div>
+    </div>
+    <div>
+      <div class="sec"><div class="sec-t">Recent Expenses</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="r">PKR</th></tr></thead>
+        <tbody id="d-exps"><tr><td colspan="4"><div class="empty"><span class="empty-s">No expenses yet</span></div></td></tr></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYOUTS -->
+<div class="page" id="page-payouts">
+  <div class="ph"><div class="ph-l"><div class="ph-title">💰 Payouts</div><div class="ph-sub">Prop firm earnings — enter rate, PKR auto-calculates</div></div><div class="ph-r"><button class="btn btn-mn" onclick="openM('mp','add')">+ Add Payout</button></div></div>
+  <div class="kpi3">
+    <div class="kpi mn"><div class="kpi-glow"></div><div class="kpi-lbl">Total Earned (USDT)</div><div class="kpi-val c-mn" id="p-usdt">0.00</div></div>
+    <div class="kpi mn"><div class="kpi-glow"></div><div class="kpi-lbl">Total PKR Received</div><div class="kpi-val c-mn" id="p-pkr">₨ 0</div></div>
+    <div class="kpi mn"><div class="kpi-glow"></div><div class="kpi-lbl">Payout Count</div><div class="kpi-val c-mn" id="p-cnt">0</div></div>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Date</th><th>Platform</th><th>Challenge</th><th class="r">USDT</th><th class="r">Fee</th><th class="r">Net USDT</th><th class="r">Rate</th><th class="r">PKR Received</th><th class="r">Cumulative</th><th>Note</th><th></th></tr></thead>
+    <tbody id="pay-tb"><tr><td colspan="12"><div class="empty"><span class="empty-ico">💰</span><div class="empty-t">No payouts yet</div></div></td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- BINANCE -->
+<div class="page" id="page-binance">
+  <div class="ph"><div class="ph-l"><div class="ph-title">🔶 Binance Withdrawals</div><div class="ph-sub">Every USDT → bank transfer</div></div><div class="ph-r"><button class="btn btn-sk" onclick="openM('mb','add')">+ Add Withdrawal</button></div></div>
+  <div class="kpi3">
+    <div class="kpi sk"><div class="kpi-glow"></div><div class="kpi-lbl">Total Withdrawn (USDT)</div><div class="kpi-val c-sk" id="b-usdt">0.00</div></div>
+    <div class="kpi sk"><div class="kpi-glow"></div><div class="kpi-lbl">Total PKR to Bank</div><div class="kpi-val c-sk" id="b-pkr">₨ 0</div></div>
+    <div class="kpi sk"><div class="kpi-glow"></div><div class="kpi-lbl">Still in Binance</div><div class="kpi-val c-sk" id="b-rem">0.00 USDT</div></div>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Date</th><th>Type</th><th class="r">Gross</th><th class="r">Fee</th><th class="r">Net USDT</th><th class="r">Rate</th><th class="r">PKR Received</th><th>Bank</th><th>Note</th><th></th></tr></thead>
+    <tbody id="bin-tb"><tr><td colspan="11"><div class="empty"><span class="empty-ico">🔶</span><div class="empty-t">No withdrawals yet</div></div></td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- EXPENSES -->
+<div class="page" id="page-expenses">
+  <div class="ph"><div class="ph-l"><div class="ph-title">💸 Expenses</div><div class="ph-sub">Track every rupee you spend</div></div><div class="ph-r"><button class="btn btn-rs" onclick="openM('me','add')">+ Add Expense</button></div></div>
+  <div class="kpi4">
+    <div class="kpi rs"><div class="kpi-glow"></div><div class="kpi-lbl">Total Spent (PKR)</div><div class="kpi-val c-rs" id="e-pkr">₨ 0</div></div>
+    <div class="kpi rs"><div class="kpi-glow"></div><div class="kpi-lbl">USD Equivalent</div><div class="kpi-val c-rs" id="e-usd">$ 0.00</div></div>
+    <div class="kpi rs"><div class="kpi-glow"></div><div class="kpi-lbl">This Month</div><div class="kpi-val c-rs" id="e-mon">₨ 0</div></div>
+    <div class="kpi rs"><div class="kpi-glow"></div><div class="kpi-lbl">Count</div><div class="kpi-val c-rs" id="e-cnt">0</div></div>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Date</th><th>Description</th><th>Category</th><th class="r">PKR</th><th>Method</th><th class="r">USD Equiv</th><th class="r">Cumulative</th><th>Note</th><th></th></tr></thead>
+    <tbody id="exp-tb"><tr><td colspan="10"><div class="empty"><span class="empty-ico">💸</span><div class="empty-t">No expenses yet</div></div></td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- INVESTMENTS -->
+<div class="page" id="page-investments">
+  <div class="ph"><div class="ph-l"><div class="ph-title">📈 Investments</div><div class="ph-sub">Track where your money is working</div></div><div class="ph-r"><button class="btn btn-am" onclick="openM('mi','add')">+ Add Investment</button></div></div>
+  <div class="kpi3">
+    <div class="kpi am"><div class="kpi-glow"></div><div class="kpi-lbl">Total Invested (PKR)</div><div class="kpi-val c-am" id="i-tot">₨ 0</div></div>
+    <div class="kpi am"><div class="kpi-glow"></div><div class="kpi-lbl">No. of Investments</div><div class="kpi-val c-am" id="i-cnt">0</div></div>
+    <div class="kpi am"><div class="kpi-glow"></div><div class="kpi-lbl">Asset Types</div><div class="kpi-val c-am" id="i-typ">0</div></div>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Date</th><th>Asset Name</th><th>Type</th><th class="r">Invested (PKR)</th><th>Note</th><th></th></tr></thead>
+    <tbody id="inv-tb"><tr><td colspan="7"><div class="empty"><span class="empty-ico">📈</span><div class="empty-t">No investments yet</div></div></td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- CONNECT -->
+<div class="page" id="page-connect">
+  <div class="ph"><div class="ph-l"><div class="ph-title">🔗 Connect & Settings</div><div class="ph-sub">Google Sheets is your live database — syncs across all devices automatically</div></div></div>
+  <div class="conn">
+    <div class="sync-si">
+      <div class="pip" id="cpip"></div>
+      <span id="cstat">Not connected</span>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost btn-sm" id="testBtn" onclick="testConn()">Test connection</button>
+    </div>
+
+    <div class="step-card">
+      <div class="step-n">1</div>
+      <div class="step-body">
+        <div class="step-t">Create your Google Sheet</div>
+        <div class="step-d">Create a new Google Sheet. Add 5 tabs named exactly: <strong>Payouts</strong>, <strong>Binance</strong>, <strong>Expenses</strong>, <strong>Investments</strong>, <strong>Dashboard</strong>.</div>
+        <a href="https://sheets.new" target="_blank" class="btn btn-mn btn-sm">Open Google Sheets ↗</a>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-n">2</div>
+      <div class="step-body">
+        <div class="step-t">Deploy the NEW Apps Script (v2 — supports read + write)</div>
+        <div class="step-d">Go to <strong>Extensions → Apps Script</strong>. Delete old code. Paste the entire script below. Click <strong>Deploy → New deployment → Web App → Anyone → Deploy</strong>. Copy the URL.</div>
+        <div class="code-bx" id="scriptBox"><button class="cp-btn" onclick="cpScript()">Copy</button>Loading script...</div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-n">3</div>
+      <div class="step-body">
+        <div class="step-t">Paste Web App URL here</div>
+        <div class="step-d">Paste the URL from your deployment. This is saved in your browser and used by this device to talk to your Sheet.</div>
+        <div class="fg">
+          <label>Apps Script Web App URL</label>
+          <input type="url" id="urlIn" placeholder="https://script.google.com/macros/s/.../exec">
+          <div class="fhint">Stored in your browser only — paste this same URL on your phone too</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-mn" onclick="saveConn()">Save & Connect</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearConn()">Disconnect</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-n">4</div>
+      <div class="step-body">
+        <div class="step-t">Host on GitHub Pages (use on any device)</div>
+        <div class="step-d">
+          1. Go to <strong>github.com</strong> → create free account → New repository → name it <strong>tracker</strong> → Public<br><br>
+          2. Upload this HTML file, rename it <strong>index.html</strong><br><br>
+          3. Go to <strong>Settings → Pages → Branch: main → Save</strong><br><br>
+          4. Your URL will be: <strong>https://YOUR-USERNAME.github.io/tracker</strong><br><br>
+          5. Open that URL on your phone → paste the same Apps Script URL → Save & Connect<br><br>
+          Now both devices read and write to the same Google Sheet. Data is always in sync.
+        </div>
+        <div class="fhint" style="margin-top:0">⚡ Each device needs internet to work — data lives in Google Sheets, not on the device.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--b0)">
+      <div class="sec" style="margin-bottom:12px"><div class="sec-t">Data Management</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="manualRefresh()">↻ Refresh from Sheets</button>
+        <button class="btn btn-ghost btn-sm" onclick="initHeaders()">⚙ Initialize Sheet Headers</button>
+        <button class="btn btn-rs btn-sm" onclick="confirmClear()">🗑 Clear all entries</button>
+      </div>
+      <div class="fhint" style="margin-top:10px" id="lastLoad">Never loaded</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ══ MODALS ══ -->
+<div class="ov" id="mp">
+  <div class="modal">
+    <div class="mhd"><div class="mhd-l"><div class="mhd-ico mn">💰</div><div><div class="mhd-t" id="mp-t">Add Payout</div><div class="mhd-s">Prop firm earning</div></div></div><div class="mhd-close" onclick="closeM('mp')">✕</div></div>
+    <div class="mbody">
+      <input type="hidden" id="mp-id">
+      <div class="fg2">
+        <div><label>Date</label><input type="date" id="mp-date"></div>
+        <div><label>Platform</label>
+          <select id="mp-plat" onchange="showC(this,'mp-plat-c')">
+            <option value="">Select…</option><option>Funded Next</option><option>FTMO</option>
+            <option>MyForexFunds</option><option>True Forex Funds</option><option>Funder Pro</option><option>The5ers</option>
+            <option value="__c__">+ Add custom</option>
+          </select>
+          <div class="fcw" id="mp-plat-c"><div class="fcr"><input type="text" id="mp-plat-n" placeholder="Platform name"><button class="fadd" onclick="addOpt('mp-plat','mp-plat-n','mp-plat-c')">Add</button></div></div>
+        </div>
+      </div>
+      <div class="fg"><label>Challenge Type</label><input type="text" id="mp-chal" placeholder="e.g. Phase 2 — 50K Account"></div>
+      <div class="fg2">
+        <div><label>Payout (USDT)</label><input type="number" id="mp-usdt" placeholder="0.00" step="0.01" oninput="cP()"></div>
+        <div><label>Fee / Tax (USDT)</label><input type="number" id="mp-fee" value="0" step="0.01" oninput="cP()"></div>
+      </div>
+      <div class="fg2">
+        <div><label>Net USDT (auto)</label><input type="text" id="mp-net" readonly></div>
+        <div><label>PKR / USD Rate</label><input type="number" id="mp-rate" placeholder="e.g. 280" step="0.01" oninput="cP()"><div class="fhint">PKR auto-calculates</div></div>
+      </div>
+      <div class="fg"><label>PKR Received (auto)</label><input type="text" id="mp-pkr" readonly></div>
+      <div class="fg"><label>Note</label><input type="text" id="mp-note" placeholder="Firm reference or note"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-ghost" onclick="closeM('mp')">Cancel</button><button class="btn btn-mn" id="mp-btn" onclick="savePay()">Add Payout</button></div>
+  </div>
+</div>
+
+<div class="ov" id="mb">
+  <div class="modal">
+    <div class="mhd"><div class="mhd-l"><div class="mhd-ico sk">🔶</div><div><div class="mhd-t" id="mb-t">Add Withdrawal</div><div class="mhd-s">Binance → Bank</div></div></div><div class="mhd-close" onclick="closeM('mb')">✕</div></div>
+    <div class="mbody">
+      <input type="hidden" id="mb-id">
+      <div class="fg2">
+        <div><label>Date</label><input type="date" id="mb-date"></div>
+        <div><label>Type</label>
+          <select id="mb-type" onchange="showC(this,'mb-type-c')">
+            <option>Withdrawal</option><option>Internal Transfer</option><option value="__c__">+ Add custom</option>
+          </select>
+          <div class="fcw" id="mb-type-c"><div class="fcr"><input type="text" id="mb-type-n"><button class="fadd" onclick="addOpt('mb-type','mb-type-n','mb-type-c')">Add</button></div></div>
+        </div>
+      </div>
+      <div class="fg2">
+        <div><label>USDT Amount</label><input type="number" id="mb-usdt" placeholder="0.00" step="0.01" oninput="cB()"></div>
+        <div><label>Network Fee</label><input type="number" id="mb-fee" value="0" step="0.01" oninput="cB()"></div>
+      </div>
+      <div class="fg2">
+        <div><label>Net USDT (auto)</label><input type="text" id="mb-net" readonly></div>
+        <div><label>PKR / USDT Rate</label><input type="number" id="mb-rate" placeholder="e.g. 280" step="0.01" oninput="cB()"></div>
+      </div>
+      <div class="fg"><label>PKR Received (auto)</label><input type="text" id="mb-pkr" readonly></div>
+      <div class="fg2">
+        <div><label>Bank Account</label>
+          <select id="mb-bank" onchange="showC(this,'mb-bank-c')">
+            <option value="">Select…</option><option>HBL</option><option>Meezan</option><option>UBL</option><option>MCB</option><option>JazzCash</option><option>EasyPaisa</option><option value="__c__">+ Add custom</option>
+          </select>
+          <div class="fcw" id="mb-bank-c"><div class="fcr"><input type="text" id="mb-bank-n"><button class="fadd" onclick="addOpt('mb-bank','mb-bank-n','mb-bank-c')">Add</button></div></div>
+        </div>
+        <div><label>Note / TXN ID</label><input type="text" id="mb-note"></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn btn-ghost" onclick="closeM('mb')">Cancel</button><button class="btn btn-sk" id="mb-btn" onclick="saveBin()">Add Withdrawal</button></div>
+  </div>
+</div>
+
+<div class="ov" id="me">
+  <div class="modal">
+    <div class="mhd"><div class="mhd-l"><div class="mhd-ico rs">💸</div><div><div class="mhd-t" id="me-t">Add Expense</div><div class="mhd-s">Record spending</div></div></div><div class="mhd-close" onclick="closeM('me')">✕</div></div>
+    <div class="mbody">
+      <input type="hidden" id="me-id">
+      <div class="fg2">
+        <div><label>Date</label><input type="date" id="me-date"></div>
+        <div><label>Category</label>
+          <select id="me-cat" onchange="showC(this,'me-cat-c')">
+            <option>Food & Dining</option><option>Transport</option><option>Bills & Utilities</option>
+            <option>Personal / Shopping</option><option>Health</option><option>Education</option>
+            <option>Investment Fee</option><option>Other</option><option value="__c__">+ Add custom</option>
+          </select>
+          <div class="fcw" id="me-cat-c"><div class="fcr"><input type="text" id="me-cat-n"><button class="fadd" onclick="addOpt('me-cat','me-cat-n','me-cat-c')">Add</button></div></div>
+        </div>
+      </div>
+      <div class="fg"><label>Description</label><input type="text" id="me-desc" placeholder="What did you spend on?"></div>
+      <div class="fg2">
+        <div><label>Amount (PKR)</label><input type="number" id="me-pkr" placeholder="0" step="1"></div>
+        <div><label>Payment Method</label>
+          <select id="me-meth" onchange="showC(this,'me-meth-c')">
+            <option>Cash</option><option>Debit Card</option><option>Online Transfer</option><option>JazzCash</option><option>EasyPaisa</option><option>Other</option><option value="__c__">+ Add custom</option>
+          </select>
+          <div class="fcw" id="me-meth-c"><div class="fcr"><input type="text" id="me-meth-n"><button class="fadd" onclick="addOpt('me-meth','me-meth-n','me-meth-c')">Add</button></div></div>
+        </div>
+      </div>
+      <div class="fg"><label>Note</label><input type="text" id="me-note" placeholder="Optional note"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-ghost" onclick="closeM('me')">Cancel</button><button class="btn btn-rs" id="me-btn" onclick="saveExp()">Add Expense</button></div>
+  </div>
+</div>
+
+<div class="ov" id="mi">
+  <div class="modal">
+    <div class="mhd"><div class="mhd-l"><div class="mhd-ico am">📈</div><div><div class="mhd-t" id="mi-t">Add Investment</div><div class="mhd-s">Record investment</div></div></div><div class="mhd-close" onclick="closeM('mi')">✕</div></div>
+    <div class="mbody">
+      <input type="hidden" id="mi-id">
+      <div class="fg2">
+        <div><label>Date</label><input type="date" id="mi-date"></div>
+        <div><label>Asset Type</label>
+          <select id="mi-type" onchange="showC(this,'mi-type-c')">
+            <option>Crypto</option><option>Stocks</option><option>Gold</option><option>Savings Scheme</option><option>Real Estate</option><option>Mutual Fund</option><option>Other</option><option value="__c__">+ Add custom</option>
+          </select>
+          <div class="fcw" id="mi-type-c"><div class="fcr"><input type="text" id="mi-type-n"><button class="fadd" onclick="addOpt('mi-type','mi-type-n','mi-type-c')">Add</button></div></div>
+        </div>
+      </div>
+      <div class="fg"><label>Asset Name</label><input type="text" id="mi-name" placeholder="e.g. Bitcoin (BTC), NSS Scheme"></div>
+      <div class="fg"><label>Amount Invested (PKR)</label><input type="number" id="mi-amt" placeholder="0" step="1"></div>
+      <div class="fg"><label>Note</label><input type="text" id="mi-note" placeholder="Optional note"></div>
+    </div>
+    <div class="mfoot"><button class="btn btn-ghost" onclick="closeM('mi')">Cancel</button><button class="btn btn-am" id="mi-btn" onclick="saveInv()">Add Investment</button></div>
+  </div>
+</div>
+
+<div id="toast"><span id="ti"></span><span id="tm"></span></div>
+
+<script>
+// ══════════════════════════════════════════
+// APPS SCRIPT CODE (for the code box)
+// ══════════════════════════════════════════
+const SCRIPT_CODE = `const SHEETS = ['Payouts', 'Binance', 'Expenses', 'Investments'];
+const ID_COL = 1;
+
+function cors(o){ return o.setMimeType(ContentService.MimeType.JSON); }
+function ok(d){ return cors(ContentService.createTextOutput(JSON.stringify({ok:true,data:d}))); }
+function err(m){ return cors(ContentService.createTextOutput(JSON.stringify({ok:false,error:m}))); }
+
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var result = {};
+    SHEETS.forEach(function(name) {
+      var sheet = ss.getSheetByName(name);
+      if (!sheet) { result[name] = []; return; }
+      var lastRow = sheet.getLastRow();
+      if (lastRow < 2) { result[name] = []; return; }
+      var data = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+      result[name] = data.filter(function(row) { return row[0] !== '' && row[0] !== null; });
+    });
+    return ok(result);
+  } catch(e) { return err(e.toString()); }
+}
+
+function doPost(e) {
+  try {
+    var p = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ws = p.sheet ? ss.getSheetByName(p.sheet) : null;
+    if (p.action === 'append') {
+      if (!ws) return err('Sheet not found: ' + p.sheet);
+      ws.appendRow(p.row);
+      return ok({appended:true});
+    }
+    if (p.action === 'update') {
+      if (!ws) return err('Sheet not found: ' + p.sheet);
+      var id = String(p.id);
+      var lastRow = ws.getLastRow();
+      if (lastRow < 2) return err('No data');
+      var ids = ws.getRange(2, ID_COL, lastRow - 1, 1).getValues();
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]) === id) {
+          ws.getRange(i + 2, 1, 1, p.row.length).setValues([p.row]);
+          return ok({updated:true});
+        }
+      }
+      return err('Row not found: ' + id);
+    }
+    if (p.action === 'delete') {
+      if (!ws) return err('Sheet not found: ' + p.sheet);
+      var id = String(p.id);
+      var lastRow = ws.getLastRow();
+      if (lastRow < 2) return err('No data');
+      var ids = ws.getRange(2, ID_COL, lastRow - 1, 1).getValues();
+      for (var i = 0; i < ids.length; i++) {
+        if (String(ids[i][0]) === id) { ws.deleteRow(i + 2); return ok({deleted:true}); }
+      }
+      return err('Row not found: ' + id);
+    }
+    if (p.action === 'write_headers') {
+      var headers = {
+        Payouts:     ['ID','Date','Platform','Challenge','USDT','Fee','Net USDT','Rate','PKR','Cumulative PKR','Note'],
+        Binance:     ['ID','Date','Type','Gross USDT','Fee','Net USDT','Rate','PKR Received','Bank','Note'],
+        Expenses:    ['ID','Date','Description','Category','PKR','Method','USD Equiv','Cumulative PKR','Note'],
+        Investments: ['ID','Date','Asset Name','Type','Invested PKR','Note'],
+      };
+      SHEETS.forEach(function(name) {
+        var s = ss.getSheetByName(name);
+        if (!s) return;
+        var h = headers[name];
+        s.getRange(1,1,1,h.length).setValues([h]).setFontWeight('bold');
+        s.setFrozenRows(1);
+      });
+      return ok({headers_written:true});
+    }
+    return err('Unknown action: ' + p.action);
+  } catch(ex) { return err(ex.toString()); }
+}`;
+
+// ══════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('eet5_theme',t);
+  document.querySelectorAll('.th-btn').forEach((b,i)=>b.classList.toggle('on',(i===0&&t==='dark')||(i===1&&t==='light')));
+}
+setTheme(localStorage.getItem('eet5_theme')||'dark');
+
+// ══════════════════════════════════════════
+// DATA STORE — Google Sheets as source of truth
+// ══════════════════════════════════════════
+let pays=[],bins=[],exps=[],invs=[];
+const getUrl=()=>localStorage.getItem('eet5_url')||'';
+const setUrl=v=>localStorage.setItem('eet5_url',v);
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+const pkr=n=>'₨ '+(+n||0).toLocaleString('en-PK',{maximumFractionDigits:0});
+const usd=n=>'$ '+(+n||0).toFixed(2);
+const N=n=>+n||0;
+const today=()=>new Date().toISOString().split('T')[0];
+const getRate=()=>{const p=[...pays].filter(x=>x.rate>0);return p.length?p[p.length-1].rate:300;};
+
+// ══════════════════════════════════════════
+// SHEETS API
+// ══════════════════════════════════════════
+async function sheetsGet(){
+  const url=getUrl();if(!url)return null;
+  try{
+    const r=await fetch(url);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    return j.ok?j.data:null;
+  }catch(e){console.error('GET failed:',e);return null;}
+}
+
+async function sheetsPost(body){
+  const url=getUrl();if(!url)return false;
+  try{
+    await fetch(url,{method:'POST',body:JSON.stringify(body)});
+    return true;
+  }catch(e){console.error('POST failed:',e);return false;}
+}
+
+// ── Parse rows from Sheets into JS objects ──
+function parsePayouts(rows){
+  return rows.map(r=>({
+    id:Number(r[0]),date:r[1],platform:r[2],challenge:r[3]||'',
+    usdt:N(r[4]),fee:N(r[5]),netUsdt:N(r[6]),rate:N(r[7]),pkr:N(r[8]),note:r[10]||''
+  }));
+}
+function parseBins(rows){
+  return rows.map(r=>({
+    id:Number(r[0]),date:r[1],type:r[2],gross:N(r[3]),fee:N(r[4]),
+    netUsdt:N(r[5]),rate:N(r[6]),pkr:N(r[7]),bank:r[8]||'',note:r[9]||''
+  }));
+}
+function parseExps(rows){
+  return rows.map(r=>({
+    id:Number(r[0]),date:r[1],desc:r[2],cat:r[3],pkr:N(r[4]),
+    method:r[5],usd:N(r[6]),note:r[8]||''
+  }));
+}
+function parseInvs(rows){
+  return rows.map(r=>({
+    id:Number(r[0]),date:r[1],name:r[2],type:r[3],amount:N(r[4]),note:r[5]||''
+  }));
+}
+
+// ── Build row arrays for Sheets ──
+function payRow(p,cum){return[p.id,p.date,p.platform,p.challenge,p.usdt,p.fee,p.netUsdt,p.rate,p.pkr,cum,p.note];}
+function binRow(b){return[b.id,b.date,b.type,b.gross,b.fee,b.netUsdt,b.rate,b.pkr,b.bank,b.note];}
+function expRow(e,cum,rate){return[e.id,e.date,e.desc,e.cat,e.pkr,e.method,(e.pkr/rate).toFixed(2),cum,e.note];}
+function invRow(i){return[i.id,i.date,i.name,i.type,i.amount,i.note];}
+
+// ══════════════════════════════════════════
+// LOAD DATA FROM SHEETS
+// ══════════════════════════════════════════
+async function loadFromSheets(){
+  const url=getUrl();
+  if(!url){hideLdr('Connect to Google Sheets first');return;}
+  setLdr('Reading your data from Google Sheets…');
+  const data=await sheetsGet();
+  if(!data){hideLdr('Could not reach Google Sheets — check your URL in Connect tab');return;}
+  pays = parsePayouts(data.Payouts||[]);
+  bins = parseBins(data.Binance||[]);
+  exps = parseExps(data.Expenses||[]);
+  invs = parseInvs(data.Investments||[]);
+  const n=new Date().toLocaleString();
+  const lt=document.getElementById('lastLoad');if(lt)lt.textContent='Last loaded: '+n;
+  renderAll();hideLdr();toast('Data loaded — '+pays.length+' payouts, '+exps.length+' expenses','mn');
+}
+
+function hideLdr(msg){
+  if(msg){document.querySelector('.load-txt').textContent=msg;setTimeout(()=>document.getElementById('loader').classList.add('hide'),2000);}
+  else document.getElementById('loader').classList.add('hide');
+}
+function setLdr(msg){document.getElementById('load-sub').textContent=msg;}
+
+async function manualRefresh(){
+  const ldr=document.getElementById('loader');
+  ldr.classList.remove('hide');
+  document.querySelector('.load-txt').textContent='Refreshing data…';
+  document.getElementById('load-sub').textContent='Reading from Google Sheets';
+  await loadFromSheets();
+}
+
+// ══════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════
+function go(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('on');
+  document.querySelector(`[data-p="${p}"]`)?.classList.add('on');
+  if(p==='connect')rConn();
+}
+
+// ══════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════
+let editMode=false,editId=null;
+const mTitles={mp:['Add Payout','Edit Payout'],mb:['Add Withdrawal','Edit Withdrawal'],me:['Add Expense','Edit Expense'],mi:['Add Investment','Edit Investment']};
+const mBtns={mp:['Add Payout','Save Changes'],mb:['Add Withdrawal','Save Changes'],me:['Add Expense','Save Changes'],mi:['Add Investment','Save Changes']};
+
+function openM(id,mode,data){
+  editMode=mode==='edit';editId=data?.id||null;
+  document.getElementById(id).classList.add('on');
+  const i=editMode?1:0;
+  document.getElementById(id+'-t').textContent=mTitles[id][i];
+  document.getElementById(id+'-btn').textContent=mBtns[id][i];
+  if(mode==='add')document.querySelectorAll('#'+id+' input[type=date]').forEach(d=>{if(!d.value)d.value=today();});
+  if(mode==='edit'&&data)fillM(id,data);
+}
+function fillM(id,d){
+  const s=(eid,v)=>{const el=document.getElementById(eid);if(el)el.value=v??'';};
+  const sel=(selId,val)=>{
+    const sel=document.getElementById(selId);if(!sel||!val)return;
+    let found=false;
+    for(let o of sel.options){if(o.value===val||o.text===val){sel.value=o.value;found=true;break;}}
+    if(!found){const o=document.createElement('option');o.value=val;o.text=val;sel.insertBefore(o,sel.querySelector('[value="__c__"]')||null);sel.value=val;}
+  };
+  if(id==='mp'){s('mp-id',d.id);s('mp-date',d.date);sel('mp-plat',d.platform);s('mp-chal',d.challenge);s('mp-usdt',d.usdt);s('mp-fee',d.fee);s('mp-rate',d.rate);s('mp-note',d.note);cP();}
+  else if(id==='mb'){s('mb-id',d.id);s('mb-date',d.date);sel('mb-type',d.type);s('mb-usdt',d.gross);s('mb-fee',d.fee);s('mb-rate',d.rate);sel('mb-bank',d.bank);s('mb-note',d.note);cB();}
+  else if(id==='me'){s('me-id',d.id);s('me-date',d.date);sel('me-cat',d.cat);s('me-desc',d.desc);s('me-pkr',d.pkr);sel('me-meth',d.method);s('me-note',d.note);}
+  else if(id==='mi'){s('mi-id',d.id);s('mi-date',d.date);sel('mi-type',d.type);s('mi-name',d.name);s('mi-amt',d.amount);s('mi-note',d.note);}
+}
+function closeM(id){document.getElementById(id).classList.remove('on');resetM(id);editMode=false;editId=null;}
+function resetM(id){const m=document.getElementById(id);m.querySelectorAll('input:not([type=date])').forEach(i=>i.value='');m.querySelectorAll('input[type=date]').forEach(i=>i.value='');m.querySelectorAll('select').forEach(s=>s.selectedIndex=0);m.querySelectorAll('.fcw').forEach(d=>d.style.display='none');}
+document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeM(o.id);}));
+
+// ══════════════════════════════════════════
+// CUSTOM DROPDOWN
+// ══════════════════════════════════════════
+function showC(sel,divId){document.getElementById(divId).style.display=sel.value==='__c__'?'block':'none';}
+function addOpt(selId,inpId,divId){
+  const val=document.getElementById(inpId).value.trim();
+  if(!val){toast('Enter a value','rs');return;}
+  const sel=document.getElementById(selId);
+  for(let o of sel.options){if(o.text===val){sel.value=o.value;document.getElementById(divId).style.display='none';return;}}
+  const o=document.createElement('option');o.value=val;o.text=val;
+  sel.insertBefore(o,sel.querySelector('[value="__c__"]')||null);
+  sel.value=val;document.getElementById(inpId).value='';document.getElementById(divId).style.display='none';
+  toast('"'+val+'" added','mn');
+}
+
+// ══════════════════════════════════════════
+// CALC
+// ══════════════════════════════════════════
+function cP(){const u=N(document.getElementById('mp-usdt').value),f=N(document.getElementById('mp-fee').value),r=N(document.getElementById('mp-rate').value),net=u-f;document.getElementById('mp-net').value=net>0?net.toFixed(2)+' USDT':'';document.getElementById('mp-pkr').value=net>0&&r>0?'₨ '+Math.round(net*r).toLocaleString():'';}
+function cB(){const u=N(document.getElementById('mb-usdt').value),f=N(document.getElementById('mb-fee').value),r=N(document.getElementById('mb-rate').value),net=u-f;document.getElementById('mb-net').value=net>0?net.toFixed(2)+' USDT':'';document.getElementById('mb-pkr').value=net>0&&r>0?'₨ '+Math.round(net*r).toLocaleString():'';}
+
+// ══════════════════════════════════════════
+// SAVE — PAYOUTS
+// ══════════════════════════════════════════
+async function savePay(){
+  const date=document.getElementById('mp-date').value,platform=document.getElementById('mp-plat').value,
+    challenge=document.getElementById('mp-chal').value.trim(),usdt=N(document.getElementById('mp-usdt').value),
+    fee=N(document.getElementById('mp-fee').value),rate=N(document.getElementById('mp-rate').value),
+    note=document.getElementById('mp-note').value.trim();
+  if(!date||!platform||!usdt||!rate){toast('Fill Date, Platform, USDT and Rate','rs');return;}
+  const net=usdt-fee,pkrV=Math.round(net*rate);
+  const btn=document.getElementById('mp-btn');btn.textContent='Saving…';btn.disabled=true;
+  if(editMode){
+    const obj={id:editId,date,platform,challenge,usdt,fee,netUsdt:net,rate,pkr:pkrV,note};
+    const i=pays.findIndex(x=>x.id==editId);if(i>=0)pays[i]=obj;
+    let cum=0;const row=payRow(obj,pays.slice(0,i+1).reduce((s,p)=>s+p.pkr,0));
+    await sheetsPost({action:'update',sheet:'Payouts',id:editId,row});
+    toast('Payout updated ✓','mn');
+  } else {
+    const id=Date.now();const obj={id,date,platform,challenge,usdt,fee,netUsdt:net,rate,pkr:pkrV,note};
+    pays.push(obj);
+    let cum=pays.reduce((s,p)=>s+p.pkr,0);
+    await sheetsPost({action:'append',sheet:'Payouts',row:payRow(obj,cum)});
+    toast('Payout saved — ₨'+pkrV.toLocaleString(),'mn');
+  }
+  btn.textContent=editMode?'Save Changes':'Add Payout';btn.disabled=false;
+  closeM('mp');renderAll();
+}
+
+// ══════════════════════════════════════════
+// SAVE — BINANCE
+// ══════════════════════════════════════════
+async function saveBin(){
+  const date=document.getElementById('mb-date').value,type=document.getElementById('mb-type').value,
+    gross=N(document.getElementById('mb-usdt').value),fee=N(document.getElementById('mb-fee').value),
+    rate=N(document.getElementById('mb-rate').value),bank=document.getElementById('mb-bank').value,
+    note=document.getElementById('mb-note').value.trim();
+  if(!date||!gross||!rate){toast('Fill Date, USDT and Rate','rs');return;}
+  const net=gross-fee,pkrV=Math.round(net*rate);
+  const btn=document.getElementById('mb-btn');btn.textContent='Saving…';btn.disabled=true;
+  if(editMode){
+    const obj={id:editId,date,type,gross,fee,netUsdt:net,rate,pkr:pkrV,bank,note};
+    const i=bins.findIndex(x=>x.id==editId);if(i>=0)bins[i]=obj;
+    await sheetsPost({action:'update',sheet:'Binance',id:editId,row:binRow(obj)});
+    toast('Withdrawal updated ✓','mn');
+  } else {
+    const id=Date.now();const obj={id,date,type,gross,fee,netUsdt:net,rate,pkr:pkrV,bank,note};
+    bins.push(obj);await sheetsPost({action:'append',sheet:'Binance',row:binRow(obj)});
+    toast('Withdrawal saved — ₨'+pkrV.toLocaleString(),'mn');
+  }
+  btn.textContent=editMode?'Save Changes':'Add Withdrawal';btn.disabled=false;
+  closeM('mb');renderAll();
+}
+
+// ══════════════════════════════════════════
+// SAVE — EXPENSE
+// ══════════════════════════════════════════
+async function saveExp(){
+  const date=document.getElementById('me-date').value,cat=document.getElementById('me-cat').value,
+    desc=document.getElementById('me-desc').value.trim(),pkrV=N(document.getElementById('me-pkr').value),
+    method=document.getElementById('me-meth').value,note=document.getElementById('me-note').value.trim();
+  if(!date||!desc||!pkrV){toast('Fill Date, Description and Amount','rs');return;}
+  const rate=getRate(),usdV=pkrV/rate;
+  const btn=document.getElementById('me-btn');btn.textContent='Saving…';btn.disabled=true;
+  if(editMode){
+    const obj={id:editId,date,cat,desc,pkr:pkrV,method,usd:usdV,note};
+    const i=exps.findIndex(x=>x.id==editId);if(i>=0)exps[i]=obj;
+    let cum=exps.slice(0,i+1).reduce((s,e)=>s+e.pkr,0);
+    await sheetsPost({action:'update',sheet:'Expenses',id:editId,row:expRow(obj,cum,rate)});
+    toast('Expense updated ✓','mn');
+  } else {
+    const id=Date.now();const obj={id,date,cat,desc,pkr:pkrV,method,usd:usdV,note};
+    exps.push(obj);let cum=exps.reduce((s,e)=>s+e.pkr,0);
+    await sheetsPost({action:'append',sheet:'Expenses',row:expRow(obj,cum,rate)});
+    toast('Expense saved — ₨'+pkrV.toLocaleString(),'mn');
+  }
+  btn.textContent=editMode?'Save Changes':'Add Expense';btn.disabled=false;
+  closeM('me');renderAll();
+}
+
+// ══════════════════════════════════════════
+// SAVE — INVESTMENT
+// ══════════════════════════════════════════
+async function saveInv(){
+  const date=document.getElementById('mi-date').value,type=document.getElementById('mi-type').value,
+    name=document.getElementById('mi-name').value.trim(),amount=N(document.getElementById('mi-amt').value),
+    note=document.getElementById('mi-note').value.trim();
+  if(!date||!name||!amount){toast('Fill Date, Name and Amount','rs');return;}
+  const btn=document.getElementById('mi-btn');btn.textContent='Saving…';btn.disabled=true;
+  if(editMode){
+    const obj={id:editId,date,type,name,amount,note};
+    const i=invs.findIndex(x=>x.id==editId);if(i>=0)invs[i]=obj;
+    await sheetsPost({action:'update',sheet:'Investments',id:editId,row:invRow(obj)});
+    toast('Investment updated ✓','mn');
+  } else {
+    const id=Date.now();const obj={id,date,type,name,amount,note};
+    invs.push(obj);await sheetsPost({action:'append',sheet:'Investments',row:invRow(obj)});
+    toast('Investment saved — ₨'+amount.toLocaleString(),'mn');
+  }
+  btn.textContent=editMode?'Save Changes':'Add Investment';btn.disabled=false;
+  closeM('mi');renderAll();
+}
+
+// ══════════════════════════════════════════
+// DELETE
+// ══════════════════════════════════════════
+async function del(store,id){
+  if(!confirm('Delete this entry permanently?'))return;
+  const sheets={p:'Payouts',b:'Binance',e:'Expenses',i:'Investments'};
+  const arrs={p:pays,b:bins,e:exps,i:invs};
+  const arr=arrs[store];const idx=arr.findIndex(x=>x.id===id);
+  if(idx<0)return;arr.splice(idx,1);
+  await sheetsPost({action:'delete',sheet:sheets[store],id});
+  renderAll();toast('Entry deleted','vi');
+}
+
+// ══════════════════════════════════════════
+// RENDER ALL
+// ══════════════════════════════════════════
+function renderAll(){rDash();rPay();rBin();rExp();rInv();badges();buildTicker();}
+
+function rDash(){
+  const tPayPKR=pays.reduce((s,p)=>s+p.pkr,0),tPayUSD=pays.reduce((s,p)=>s+p.netUsdt,0);
+  const tBinPKR=bins.reduce((s,b)=>s+b.pkr,0),tBinUST=bins.reduce((s,b)=>s+b.netUsdt,0);
+  const tExp=exps.reduce((s,e)=>s+e.pkr,0),bal=tBinPKR-tExp,rate=getRate();
+  const rem=tPayUSD-tBinUST,invTot=invs.reduce((s,i)=>s+i.amount,0);
+  const invTypes=[...new Set(invs.map(i=>i.type))];
+  document.getElementById('sb-earned').textContent=pkr(tPayPKR);
+  document.getElementById('sb-earned-u').textContent=usd(tPayUSD)+' USD';
+  document.getElementById('sb-with').textContent=pkr(tBinPKR);
+  document.getElementById('sb-with-u').textContent=tBinUST.toFixed(2)+' USDT';
+  document.getElementById('sb-spent').textContent=pkr(tExp);
+  document.getElementById('sb-spent-u').textContent=usd(tExp/rate)+' equiv';
+  const be=document.getElementById('sb-bal');be.textContent=pkr(bal);be.className='sum-val '+(bal>=0?'c-mn':'c-rs');
+  document.getElementById('sb-inv').textContent=pkr(invTot);
+  document.getElementById('sb-inv-c').textContent=invs.length+' asset'+(invs.length!==1?'s':'');
+  document.getElementById('d-b-earn').textContent=tPayUSD.toFixed(2)+' USDT';
+  document.getElementById('d-b-with').textContent=tBinUST.toFixed(2)+' USDT';
+  document.getElementById('d-b-rem').textContent=rem.toFixed(2)+' USDT';
+  document.getElementById('d-b-pkr').textContent=pkr(Math.round(rem*rate));
+  const cats={};exps.forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.pkr;});
+  const max=Math.max(...Object.values(cats),1),totE=Math.max(tExp,1);
+  const bc={'Food & Dining':'var(--mn)','Transport':'var(--sk)','Bills & Utilities':'var(--t2)','Personal / Shopping':'var(--vi2)','Health':'var(--mn2)','Education':'var(--sk2)','Investment Fee':'var(--am)','Other':'var(--t3)'};
+  const ce=document.getElementById('d-cats');
+  ce.innerHTML=Object.keys(cats).length?Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>`<div class="cb-row"><div class="cb-top"><span class="cb-lbl">${cat}<span class="cb-pct">${(amt/totE*100).toFixed(0)}%</span></span><span class="cb-val">${pkr(amt)}</span></div><div class="cb-track"><div class="cb-fill" style="width:${(amt/max*100).toFixed(1)}%;background:${bc[cat]||'var(--t2)'}"></div></div></div>`).join(''):'<div class="empty" style="padding:14px 0"><span class="empty-s">No expenses yet</span></div>';
+  const rp=document.getElementById('d-pays');
+  rp.innerHTML=[...pays].slice(-6).reverse().map(p=>`<tr><td class="mono" style="color:var(--t2);font-size:11px">${p.date}</td><td><span class="badge bm">${p.platform}</span></td><td class="r mono c-mn">${usd(p.netUsdt)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty" style="padding:14px"><span class="empty-s">No payouts</span></div></td></tr>';
+  const re=document.getElementById('d-exps');
+  re.innerHTML=[...exps].slice(-6).reverse().map(e=>`<tr><td class="mono" style="color:var(--t2);font-size:11px">${e.date}</td><td style="font-size:12px">${e.desc}</td><td><span class="badge br" style="font-size:9px">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty" style="padding:14px"><span class="empty-s">No expenses</span></div></td></tr>';
+}
+
+function rPay(){
+  const tU=pays.reduce((s,p)=>s+p.netUsdt,0),tP=pays.reduce((s,p)=>s+p.pkr,0);
+  document.getElementById('p-usdt').textContent=tU.toFixed(2);
+  document.getElementById('p-pkr').textContent=pkr(tP);
+  document.getElementById('p-cnt').textContent=pays.length;
+  const tb=document.getElementById('pay-tb');
+  if(!pays.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><span class="empty-ico">💰</span><div class="empty-t">No payouts yet</div></div></td></tr>';return;}
+  let cum=0;
+  tb.innerHTML=pays.map((p,i)=>{cum+=p.pkr;return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${p.date}</td><td><span class="badge bm">${p.platform}</span></td><td style="color:var(--t2);font-size:11px">${p.challenge||'—'}</td><td class="r mono c-mn">${p.usdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.fee.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${p.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.rate.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${p.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mp','edit',pays.find(x=>x.id===${p.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('p',${p.id})">🗑</button></div></td></tr>`;}).join('');
+}
+
+function rBin(){
+  const tU=bins.reduce((s,b)=>s+b.netUsdt,0),tP=bins.reduce((s,b)=>s+b.pkr,0),eU=pays.reduce((s,p)=>s+p.netUsdt,0);
+  document.getElementById('b-usdt').textContent=tU.toFixed(2);
+  document.getElementById('b-pkr').textContent=pkr(tP);
+  document.getElementById('b-rem').textContent=(eU-tU).toFixed(2)+' USDT';
+  const tb=document.getElementById('bin-tb');
+  if(!bins.length){tb.innerHTML='<tr><td colspan="11"><div class="empty"><span class="empty-ico">🔶</span><div class="empty-t">No withdrawals yet</div></div></td></tr>';return;}
+  tb.innerHTML=bins.map((b,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${b.date}</td><td><span class="badge bs">${b.type}</span></td><td class="r mono c-am">${b.gross.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.fee.toFixed(2)}</td><td class="r mono c-mn">${b.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.rate.toFixed(2)}</td><td class="r mono c-sk" style="font-weight:700">${pkr(b.pkr)}</td><td style="font-size:11px">${b.bank||'—'}</td><td style="color:var(--t2);font-size:11px">${b.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mb','edit',bins.find(x=>x.id===${b.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('b',${b.id})">🗑</button></div></td></tr>`).join('');
+}
+
+function rExp(){
+  const tP=exps.reduce((s,e)=>s+e.pkr,0),rate=getRate();
+  const now=new Date(),ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mon=exps.filter(e=>e.date.startsWith(ym)).reduce((s,e)=>s+e.pkr,0);
+  document.getElementById('e-pkr').textContent=pkr(tP);
+  document.getElementById('e-usd').textContent=usd(tP/rate);
+  document.getElementById('e-mon').textContent=pkr(mon);
+  document.getElementById('e-cnt').textContent=exps.length;
+  const catCls={'Food & Dining':'bm','Transport':'bs','Bills & Utilities':'bd','Personal / Shopping':'bv','Health':'bm','Education':'bs','Investment Fee':'ba','Other':'bd'};
+  const tb=document.getElementById('exp-tb');
+  if(!exps.length){tb.innerHTML='<tr><td colspan="10"><div class="empty"><span class="empty-ico">💸</span><div class="empty-t">No expenses yet</div></div></td></tr>';return;}
+  let cum=0;
+  tb.innerHTML=exps.map((e,i)=>{cum+=e.pkr;const cc=catCls[e.cat]||'bd';return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${e.date}</td><td>${e.desc}</td><td><span class="badge ${cc}">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td><td><span class="badge bd">${e.method}</span></td><td class="r mono" style="color:var(--t2)">${usd(e.pkr/rate)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${e.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('me','edit',exps.find(x=>x.id===${e.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('e',${e.id})">🗑</button></div></td></tr>`;}).join('');
+}
+
+function rInv(){
+  const tot=invs.reduce((s,i)=>s+i.amount,0),types=[...new Set(invs.map(i=>i.type))];
+  document.getElementById('i-tot').textContent=pkr(tot);
+  document.getElementById('i-cnt').textContent=invs.length;
+  document.getElementById('i-typ').textContent=types.length;
+  const tb=document.getElementById('inv-tb');
+  if(!invs.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><span class="empty-ico">📈</span><div class="empty-t">No investments yet</div></div></td></tr>';return;}
+  tb.innerHTML=invs.map((v,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${v.date}</td><td style="font-weight:600;color:var(--am2)">${v.name}</td><td><span class="badge ba">${v.type}</span></td><td class="r mono c-am" style="font-weight:700">${pkr(v.amount)}</td><td style="color:var(--t2);font-size:11px">${v.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mi','edit',invs.find(x=>x.id===${v.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('i',${v.id})">🗑</button></div></td></tr>`).join('');
+}
+
+function badges(){
+  document.getElementById('nb-p').textContent=pays.length;
+  document.getElementById('nb-b').textContent=bins.length;
+  document.getElementById('nb-e').textContent=exps.length;
+  document.getElementById('nb-i').textContent=invs.length;
+}
+
+function buildTicker(){
+  const r=getRate(),tP=pays.reduce((s,x)=>s+x.pkr,0),tE=exps.reduce((s,x)=>s+x.pkr,0),tB=bins.reduce((s,x)=>s+x.pkr,0),tU=pays.reduce((s,x)=>s+x.netUsdt,0),bal=tB-tE;
+  const items=[{l:'NQ',v:'~21,340',c:'up'},{l:'GOLD',v:'~3,215',c:'up'},{l:'ES',v:'~5,782',c:'dn'},{l:'BTC',v:'~97,200',c:'up'},{l:'USDT/PKR',v:r.toFixed(0),c:''},{l:'EARNED',v:'₨'+Math.round(tP).toLocaleString(),c:'up'},{l:'BALANCE',v:'₨'+Math.round(bal).toLocaleString(),c:bal>=0?'up':'dn'},{l:'SPENT',v:'₨'+Math.round(tE).toLocaleString(),c:'dn'},{l:'USD',v:'$'+tU.toFixed(2),c:'up'}];
+  const h=items.map(x=>`<span class="t-item"><span class="t-lbl">${x.l}</span><span style="margin:0 4px;color:var(--t3)">·</span><span class="t-val ${x.c?'t-'+x.c:''}">${x.v}</span></span>`).join('');
+  document.getElementById('tickerEl').innerHTML=h+h;
+}
+
+// ══════════════════════════════════════════
+// CONNECT
+// ══════════════════════════════════════════
+function rConn(){
+  const url=getUrl();if(url)document.getElementById('urlIn').value=url;
+  updConn();
+  // Load script code into box
+  const box=document.getElementById('scriptBox');
+  box.textContent=SCRIPT_CODE;
+  const btn=document.createElement('button');btn.className='cp-btn';btn.textContent='Copy';btn.onclick=cpScript;
+  box.insertBefore(btn,box.firstChild);
+}
+function updConn(){
+  const on=!!getUrl();
+  ['pip','cpip'].forEach(id=>{const d=document.getElementById(id);if(d)d.className='pip'+(on?' on':'');});
+  document.getElementById('syncLbl').textContent=on?'Connected':'Not connected';
+  const cs=document.getElementById('cstat');
+  if(cs)cs.textContent=on?'✓ Connected — data loads live from Google Sheets on every open':'Not connected — enter your Apps Script URL below';
+}
+function saveConn(){
+  const u=document.getElementById('urlIn').value.trim();
+  if(!u||!u.includes('script.google.com')){toast('Enter a valid Apps Script URL','rs');return;}
+  setUrl(u);updConn();toast('Saved! Loading your data now…','mn');
+  loadFromSheets();
+}
+function clearConn(){if(!confirm('Disconnect?'))return;setUrl('');document.getElementById('urlIn').value='';updConn();toast('Disconnected','vi');}
+async function testConn(){
+  const url=document.getElementById('urlIn').value.trim()||getUrl();
+  if(!url){toast('Enter a URL first','rs');return;}
+  const btn=document.getElementById('testBtn');btn.textContent='Testing…';
+  try{const r=await fetch(url);const j=await r.json();toast(j.ok?'Connection working ✓ — data is readable':'Script error: '+j.error,'rs');}
+  catch{toast('Connection failed — check URL and deployment settings','rs');}
+  btn.textContent='Test connection';
+}
+function cpScript(){
+  navigator.clipboard.writeText(SCRIPT_CODE).then(()=>toast('Script copied — paste into Apps Script','mn')).catch(()=>toast('Select and copy manually','rs'));
+}
+async function initHeaders(){
+  if(!getUrl()){toast('Connect first','rs');return;}
+  await sheetsPost({action:'write_headers'});toast('Headers written to all sheets ✓','mn');
+}
+function confirmClear(){
+  if(!confirm('This will DELETE all entries from Google Sheets. Are you sure?'))return;
+  if(!confirm('Last chance — this is permanent.'))return;
+  toast('Clear not implemented in live mode — delete rows directly in Google Sheets','vi');
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+let tt;
+function toast(msg,type='mn'){
+  const el=document.getElementById('toast');
+  document.getElementById('ti').textContent={mn:'✓',rs:'✕',vi:'ℹ'}[type]||'✓';
+  document.getElementById('tm').textContent=msg;
+  el.className='show '+(type||'');
+  clearTimeout(tt);tt=setTimeout(()=>el.className='',3200);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+buildTicker();updConn();
+if(getUrl()){
+  loadFromSheets();
+} else {
+  hideLdr('No connection yet — go to Connect tab and add your Google Sheets URL');
+}
+</script>
+</body>
+</html>

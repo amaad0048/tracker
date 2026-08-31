@@ -300,6 +300,172 @@ select option{background:var(--s1)}
   .sb-ico{width:100%;text-align:center}
 }
 @media(max-width:600px){.kpi3,.kpi4,.g2{grid-template-columns:1fr}.main .page{padding:14px}}
+
+/* ═══════════════════════════════════════════
+   MOBILE-FIRST RESPONSIVE — complete overhaul
+═══════════════════════════════════════════ */
+
+/* ── Hide sidebar on mobile, show bottom nav ── */
+@media(max-width:768px){
+
+  /* Full height shell */
+  html,body{height:100%;overflow:hidden}
+
+  /* Topbar: compact */
+  .topbar{padding:0 12px;gap:8px;height:50px;min-height:50px}
+  .tb-logo{width:auto;min-width:unset;border-right:none;padding:0;gap:8px}
+  .tb-name span{display:none}
+  .tb-name{font-size:12px}
+  .tb-gem{width:24px;height:24px;font-size:12px;border-radius:7px}
+  .ticker{display:none}
+  .tb-right{gap:6px;padding:0}
+  .theme-pill .th-btn:first-child::before{content:'🌙'}
+  .theme-pill .th-btn:last-child::before{content:'☀️'}
+  .theme-pill .th-btn{padding:4px 8px;font-size:10px}
+  #syncLbl{display:none}
+  .st-pill{padding:4px 8px}
+  #syncBtn{padding:5px 10px;font-size:11px}
+  .btn-ghost.btn-sm[onclick="go('connect')"]{padding:5px 8px;font-size:11px}
+
+  /* Hide sidebar completely */
+  .sidebar{display:none}
+
+  /* Shell takes full width */
+  .shell{height:calc(100vh - 50px - 56px);flex-direction:column}
+
+  /* Main scrolls freely */
+  .main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .page{padding:14px 12px;gap:14px}
+
+  /* Bottom navigation bar */
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;height:56px;
+    background:var(--s0);border-top:1px solid var(--b0);
+    display:flex;align-items:center;justify-content:space-around;
+    z-index:300;padding:0 4px;
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  }
+  .bn-item{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:6px 10px;border-radius:10px;cursor:pointer;
+    font-size:9px;font-weight:600;color:var(--t2);
+    transition:all .15s;flex:1;position:relative;
+    letter-spacing:.03em;text-transform:uppercase;
+  }
+  .bn-item.on{color:var(--vi3);background:var(--vi4)}
+  .bn-item-ico{font-size:20px;line-height:1}
+  .bn-badge{
+    position:absolute;top:4px;right:14px;
+    width:16px;height:16px;border-radius:50%;
+    background:var(--vi2);color:#fff;
+    font-size:9px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--fm);
+  }
+  .bn-badge.hidden{display:none}
+
+  /* Page header */
+  .ph{flex-direction:column;gap:10px;align-items:flex-start}
+  .ph-r{width:100%}
+  .ph-r .btn{width:100%;justify-content:center;padding:10px}
+  .ph-title{font-size:18px}
+
+  /* Summary bar: vertical stack */
+  .sum-bar{flex-direction:column;padding:14px 16px;gap:0;border-radius:var(--r2)}
+  .sum-seg{border-right:none;border-bottom:1px solid var(--b0);padding:10px 0;flex-direction:row;justify-content:space-between;align-items:center;gap:8px}
+  .sum-seg:last-child{border-bottom:none}
+  .sum-lbl{font-size:10px;margin-bottom:0}
+  .sum-val{font-size:16px}
+  .sum-sub{font-size:10px;text-align:right}
+
+  /* KPI grids: 2 cols on phone */
+  .kpi3,.kpi4{grid-template-columns:1fr 1fr !important;gap:10px}
+  .kpi{padding:14px 14px}
+  .kpi-val{font-size:17px}
+  .kpi-lbl{font-size:9px;margin-bottom:7px}
+
+  /* Dashboard grids: single column */
+  .g32,.g23,.g2,.g3{grid-template-columns:1fr !important;gap:12px}
+
+  /* Tables — card style on mobile */
+  .tbl-wrap{border-radius:var(--r2);overflow:hidden}
+  table{display:block}
+  thead{display:none}
+  tbody{display:flex;flex-direction:column;gap:0}
+  tbody tr{
+    display:flex;flex-direction:column;gap:0;
+    border-bottom:1px solid var(--b0);padding:12px 14px;
+  }
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:rgba(124,58,237,.04)}
+  td{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:3px 0;font-size:12px;border:none;
+  }
+  td::before{
+    content:attr(data-label);
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--t2);flex-shrink:0;margin-right:8px;
+  }
+  td.no-label::before{display:none}
+  td.r,td.mono{text-align:right;justify-content:flex-end}
+  td.r::before{margin-right:auto}
+
+  /* Row actions always visible on mobile */
+  .ra{opacity:1 !important;gap:6px}
+  .ra-btn{padding:5px 12px;font-size:11px;border:1px solid var(--b0);border-radius:8px}
+  .ra-e{border-color:rgba(124,58,237,.3);background:var(--vi4)}
+  .ra-d{border-color:rgba(244,63,94,.3);background:var(--rs3)}
+
+  /* Badges readable */
+  .badge{font-size:10px;padding:3px 8px}
+
+  /* Modal full screen */
+  .ov{align-items:flex-end}
+  .modal{
+    width:100% !important;max-width:100% !important;
+    max-height:92vh;border-radius:20px 20px 0 0;
+    border-bottom:none;
+  }
+  .mhd{padding:18px 18px 0}
+  .mbody{padding:0 18px 8px}
+  .mfoot{padding:14px 18px 20px}
+  .fg2{grid-template-columns:1fr !important;gap:10px}
+
+  /* Panel rows */
+  .prow{padding:10px 14px}
+  .panel-hd{padding:12px 14px}
+
+  /* Bars */
+  .cat-bars{padding:12px 14px}
+
+  /* Connect page */
+  .conn{max-width:100%}
+  .step-card{padding:14px;gap:12px}
+  .step-d{font-size:11px}
+  .code-bx{font-size:9px;max-height:100px}
+
+  /* Loading screen */
+  #loader{padding:20px}
+
+  /* Empty states */
+  .empty{padding:32px 16px}
+
+  /* Section heads */
+  .sec{margin-bottom:8px}
+
+  /* Fix shell height with bottom nav */
+  .shell{height:calc(100dvh - 50px - 56px)}
+}
+
+/* ── Small phones ── */
+@media(max-width:375px){
+  .kpi-val{font-size:15px}
+  .sum-val{font-size:15px}
+  .page{padding:12px 10px}
+  .bn-item{padding:6px 6px;font-size:8px}
+}
+
 </style>
 </head>
 <body>
@@ -1187,5 +1353,104 @@ if(getUrl()){
   hideLdr('No connection yet — go to Connect tab and add your Google Sheets URL');
 }
 </script>
+
+<script>
+// ── BOTTOM NAV ──────────────────────────────────
+(function(){
+  const nav = document.createElement('nav');
+  nav.className = 'bottom-nav';
+  nav.id = 'bottomNav';
+  nav.innerHTML = `
+    <div class="bn-item on" data-p="dashboard" onclick="go('dashboard')">
+      <span class="bn-item-ico">🏠</span><span>Home</span>
+    </div>
+    <div class="bn-item" data-p="payouts" onclick="go('payouts')" style="position:relative">
+      <span class="bn-item-ico">💰</span><span>Payouts</span>
+      <span class="bn-badge hidden" id="bnb-p">0</span>
+    </div>
+    <div class="bn-item" data-p="binance" onclick="go('binance')">
+      <span class="bn-item-ico">🔶</span><span>Binance</span>
+      <span class="bn-badge hidden" id="bnb-b">0</span>
+    </div>
+    <div class="bn-item" data-p="expenses" onclick="go('expenses')">
+      <span class="bn-item-ico">💸</span><span>Spend</span>
+      <span class="bn-badge hidden" id="bnb-e">0</span>
+    </div>
+    <div class="bn-item" data-p="investments" onclick="go('investments')">
+      <span class="bn-item-ico">📈</span><span>Invest</span>
+      <span class="bn-badge hidden" id="bnb-i">0</span>
+    </div>
+    <div class="bn-item" data-p="connect" onclick="go('connect')">
+      <span class="bn-item-ico">⚙️</span><span>Setup</span>
+    </div>
+  `;
+  document.body.appendChild(nav);
+})();
+
+// ── Patch go() to also update bottom nav ──
+const _origGo = go;
+go = function(p){
+  _origGo(p);
+  document.querySelectorAll('.bn-item').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.bn-item[data-p="'+p+'"]').forEach(x=>x.classList.add('on'));
+};
+
+// ── Patch badges() to also update bottom nav badges ──
+const _origBadges = badges;
+badges = function(){
+  _origBadges();
+  const map = {p:'nb-p',b:'nb-b',e:'nb-e',i:'nb-i'};
+  Object.entries(map).forEach(([k,id])=>{
+    const el = document.getElementById(id);
+    const val = el ? el.textContent : '0';
+    const bn = document.getElementById('bnb-'+k);
+    if(bn){
+      bn.textContent = val;
+      bn.classList.toggle('hidden', val==='0'||!val);
+    }
+  });
+};
+
+// ── Add data-label to table cells for mobile card view ──
+function labelTables(){
+  const labelMap = {
+    'pay-tb': ['#','Date','Platform','Challenge','USDT','Fee','Net USDT','Rate','PKR Received','Cumulative','Note',''],
+    'bin-tb': ['#','Date','Type','Gross','Fee','Net USDT','Rate','PKR Received','Bank','Note',''],
+    'exp-tb': ['#','Date','Description','Category','PKR','Method','USD Equiv','Cumulative','Note',''],
+    'inv-tb': ['#','Date','Asset Name','Type','Invested','Note',''],
+    'd-pays': ['Date','Platform','USD','PKR'],
+    'd-exps': ['Date','Description','Category','PKR'],
+  };
+  Object.entries(labelMap).forEach(([tbId, labels])=>{
+    const tb = document.getElementById(tbId);
+    if(!tb) return;
+    const rows = tb.querySelectorAll('tr');
+    rows.forEach(row=>{
+      const cells = row.querySelectorAll('td');
+      cells.forEach((cell,i)=>{
+        const lbl = labels[i]||'';
+        if(lbl==='' || lbl==='#'){
+          cell.classList.add('no-label');
+        } else {
+          cell.setAttribute('data-label', lbl);
+        }
+      });
+    });
+  });
+}
+
+// ── Re-label after every render ──
+const _origRenderAll = renderAll;
+renderAll = function(){
+  _origRenderAll();
+  setTimeout(labelTables, 50);
+  badges();
+};
+
+// ── Label on initial load ──
+document.addEventListener('DOMContentLoaded', ()=>setTimeout(labelTables,200));
+setTimeout(labelTables, 1000);
+</script>
+
 </body>
 </html>

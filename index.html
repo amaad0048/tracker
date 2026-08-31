@@ -466,6 +466,102 @@ select option{background:var(--s1)}
   .bn-item{padding:6px 6px;font-size:8px}
 }
 
+
+/* ═══════════════════════════════════════════
+   BUG FIXES — QA Round 1
+═══════════════════════════════════════════ */
+
+/* FIX 1: Remove ghost bottom-left text on desktop (sb-foot leaking) */
+.sb-foot { display: none !important; }
+
+/* FIX 2: Mobile topbar — fit everything, no overflow */
+@media(max-width:768px){
+  .topbar { padding: 0 8px; gap: 6px; height: 48px; min-height: 48px; }
+  .tb-gem { width: 22px; height: 22px; font-size: 11px; border-radius: 6px; flex-shrink:0; }
+  .tb-name { font-size: 11px; white-space: nowrap; }
+  .tb-name span { display: none; }
+  .theme-pill { padding: 2px; gap: 1px; }
+  .th-btn { padding: 3px 7px; font-size: 10px; }
+  .st-pill { padding: 3px 8px; gap: 4px; font-size: 10px; }
+  #syncLbl { display: none; }
+  .tb-right { gap: 5px; padding: 0; flex-shrink: 0; }
+  #syncBtn { padding: 5px 9px; font-size: 10px; gap: 3px; }
+  .btn-ghost.btn-sm[onclick="go('connect')"] { padding: 5px 7px; font-size: 11px; }
+  .shell { height: calc(100dvh - 48px - 56px); }
+}
+
+/* FIX 3: Mobile dashboard summary bar — left-aligned, not centre */
+@media(max-width:768px){
+  .sum-bar { border-radius: var(--r2); padding: 12px 14px; }
+  .sum-seg {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 0.5px solid var(--b0);
+    border-right: none;
+    gap: 0;
+  }
+  .sum-seg:last-child { border-bottom: none; }
+  .sum-lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--t2);
+    margin-bottom: 0; text-align: left;
+  }
+  .sum-val { font-size: 15px; text-align: right; }
+  .sum-sub { display: none; }
+}
+
+/* FIX 4: Collapsible rows — base styles */
+.row-collapsed td.td-hidden { display: none; }
+.row-collapsed td.td-main { border-bottom: none; }
+.expand-btn {
+  background: none; border: 1px solid var(--b0); border-radius: 6px;
+  color: var(--t2); font-size: 11px; padding: 3px 8px; cursor: pointer;
+  transition: .15s; font-family: var(--f); margin-left: 6px;
+}
+.expand-btn:hover { border-color: var(--vi2); color: var(--vi3); }
+
+/* Mobile: collapsed row card style */
+@media(max-width:768px){
+  tbody tr.collapsible-row {
+    display: flex; flex-direction: column; gap: 0;
+    border-bottom: 1px solid var(--b0); padding: 0;
+  }
+  tbody tr.collapsible-row td.td-summary {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  tbody tr.collapsible-row td.td-summary::before { display: none !important; }
+  tbody tr.collapsible-row td.td-detail {
+    padding: 4px 14px;
+    font-size: 12px;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  tbody tr.collapsible-row td.td-detail:last-child { padding-bottom: 12px; }
+  tbody tr.collapsible-row td.td-detail::before {
+    content: attr(data-label);
+    font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--t2);
+    flex-shrink: 0; margin-right: 8px;
+  }
+  tbody tr.collapsible-row.collapsed td.td-detail { display: none; }
+  tbody tr.collapsible-row td.td-actions {
+    padding: 8px 14px 12px;
+    display: flex !important; gap: 8px;
+  }
+  tbody tr.collapsible-row td.td-actions::before { display: none !important; }
+  tbody tr.collapsible-row.collapsed td.td-actions { display: none !important; }
+  .chevron { display: inline-block; transition: transform .2s; font-style: normal; }
+  .collapsed .chevron { transform: rotate(-90deg); }
+}
+
 </style>
 </head>
 <body>
@@ -1450,6 +1546,190 @@ renderAll = function(){
 // ── Label on initial load ──
 document.addEventListener('DOMContentLoaded', ()=>setTimeout(labelTables,200));
 setTimeout(labelTables, 1000);
+</script>
+
+
+<script>
+// ── COLLAPSIBLE ROWS (mobile) ─────────────────────────
+function isMobile(){ return window.innerWidth <= 768; }
+
+function toggleRow(rowEl){
+  rowEl.classList.toggle('collapsed');
+  const btn = rowEl.querySelector('.chev-btn');
+  if(btn) btn.textContent = rowEl.classList.contains('collapsed') ? '▸' : '▾';
+}
+
+// ── Rebuild tables as collapsible cards on mobile ──────
+function rebuildForMobile(){
+  if(!isMobile()) return;
+
+  // PAYOUTS
+  const payTb = document.getElementById('pay-tb');
+  if(payTb) payTb.querySelectorAll('tr[data-id]').forEach(row => {
+    if(row.classList.contains('collapsible-row')) return;
+    const cells = row.querySelectorAll('td');
+    if(cells.length < 2) return;
+    const date = cells[1]?.textContent||'';
+    const platform = cells[2]?.innerHTML||'';
+    const usdt = cells[4]?.textContent||'';
+    const pkr = cells[8]?.textContent||'';
+    const rate = cells[7]?.textContent||'';
+    const fee = cells[5]?.textContent||'';
+    const net = cells[6]?.textContent||'';
+    const cum = cells[9]?.textContent||'';
+    const note = cells[10]?.textContent||'';
+    const id = row.getAttribute('data-id');
+    row.className = 'collapsible-row collapsed';
+    row.innerHTML = `
+      <td class="td-summary" onclick="toggleRow(this.parentElement)">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--t0)">${pkr}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">${platform} · ${date.substring(0,10)}</div>
+        </div>
+        <span class="chev-btn" style="font-size:16px;color:var(--t2)">▸</span>
+      </td>
+      <td class="td-detail" data-label="USDT">${usdt}</td>
+      <td class="td-detail" data-label="Fee">${fee}</td>
+      <td class="td-detail" data-label="Net USDT">${net}</td>
+      <td class="td-detail" data-label="Rate">${rate}</td>
+      <td class="td-detail" data-label="Cumulative">${cum}</td>
+      <td class="td-detail" data-label="Note">${note}</td>
+      <td class="td-actions">
+        <button class="ra-btn ra-e" onclick="openM('mp','edit',pays.find(x=>x.id===${id}))">✏ Edit</button>
+        <button class="ra-btn ra-d" onclick="del('p',${id})">🗑 Delete</button>
+      </td>`;
+  });
+
+  // BINANCE
+  const binTb = document.getElementById('bin-tb');
+  if(binTb) binTb.querySelectorAll('tr[data-id]').forEach(row => {
+    if(row.classList.contains('collapsible-row')) return;
+    const cells = row.querySelectorAll('td');
+    if(cells.length < 2) return;
+    const date = cells[1]?.textContent||'';
+    const type = cells[2]?.innerHTML||'';
+    const pkr = cells[7]?.textContent||'';
+    const gross = cells[3]?.textContent||'';
+    const net = cells[5]?.textContent||'';
+    const rate = cells[6]?.textContent||'';
+    const bank = cells[8]?.textContent||'';
+    const note = cells[9]?.textContent||'';
+    const id = row.getAttribute('data-id');
+    row.className = 'collapsible-row collapsed';
+    row.innerHTML = `
+      <td class="td-summary" onclick="toggleRow(this.parentElement)">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--t0)">${pkr}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">${type} · ${date.substring(0,10)}</div>
+        </div>
+        <span class="chev-btn" style="font-size:16px;color:var(--t2)">▸</span>
+      </td>
+      <td class="td-detail" data-label="Gross">${gross}</td>
+      <td class="td-detail" data-label="Net USDT">${net}</td>
+      <td class="td-detail" data-label="Rate">${rate}</td>
+      <td class="td-detail" data-label="Bank">${bank}</td>
+      <td class="td-detail" data-label="Note">${note}</td>
+      <td class="td-actions">
+        <button class="ra-btn ra-e" onclick="openM('mb','edit',bins.find(x=>x.id===${id}))">✏ Edit</button>
+        <button class="ra-btn ra-d" onclick="del('b',${id})">🗑 Delete</button>
+      </td>`;
+  });
+
+  // EXPENSES
+  const expTb = document.getElementById('exp-tb');
+  if(expTb) expTb.querySelectorAll('tr[data-id]').forEach(row => {
+    if(row.classList.contains('collapsible-row')) return;
+    const cells = row.querySelectorAll('td');
+    if(cells.length < 2) return;
+    const date = cells[1]?.textContent||'';
+    const desc = cells[2]?.textContent||'';
+    const cat = cells[3]?.innerHTML||'';
+    const pkr = cells[4]?.textContent||'';
+    const method = cells[5]?.innerHTML||'';
+    const usd = cells[6]?.textContent||'';
+    const cum = cells[7]?.textContent||'';
+    const note = cells[8]?.textContent||'';
+    const id = row.getAttribute('data-id');
+    row.className = 'collapsible-row collapsed';
+    row.innerHTML = `
+      <td class="td-summary" onclick="toggleRow(this.parentElement)">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:13px;color:var(--rs2)">${pkr}</div>
+          <div style="font-size:11px;color:var(--t0);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${desc}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:1px">${date.substring(0,10)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          ${cat}
+          <span class="chev-btn" style="font-size:16px;color:var(--t2)">▸</span>
+        </div>
+      </td>
+      <td class="td-detail" data-label="Method">${method}</td>
+      <td class="td-detail" data-label="USD Equiv">${usd}</td>
+      <td class="td-detail" data-label="Cumulative">${cum}</td>
+      <td class="td-detail" data-label="Note">${note}</td>
+      <td class="td-actions">
+        <button class="ra-btn ra-e" onclick="openM('me','edit',exps.find(x=>x.id===${id}))">✏ Edit</button>
+        <button class="ra-btn ra-d" onclick="del('e',${id})">🗑 Delete</button>
+      </td>`;
+  });
+
+  // INVESTMENTS
+  const invTb = document.getElementById('inv-tb');
+  if(invTb) invTb.querySelectorAll('tr[data-id]').forEach(row => {
+    if(row.classList.contains('collapsible-row')) return;
+    const cells = row.querySelectorAll('td');
+    if(cells.length < 2) return;
+    const date = cells[1]?.textContent||'';
+    const name = cells[2]?.textContent||'';
+    const type = cells[3]?.innerHTML||'';
+    const amt = cells[4]?.textContent||'';
+    const note = cells[5]?.textContent||'';
+    const id = row.getAttribute('data-id');
+    row.className = 'collapsible-row collapsed';
+    row.innerHTML = `
+      <td class="td-summary" onclick="toggleRow(this.parentElement)">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--am2)">${amt}</div>
+          <div style="font-size:11px;color:var(--t0);margin-top:1px">${name}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:1px">${date.substring(0,10)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          ${type}
+          <span class="chev-btn" style="font-size:16px;color:var(--t2)">▸</span>
+        </div>
+      </td>
+      <td class="td-detail" data-label="Note">${note}</td>
+      <td class="td-actions">
+        <button class="ra-btn ra-e" onclick="openM('mi','edit',invs.find(x=>x.id===${id}))">✏ Edit</button>
+        <button class="ra-btn ra-d" onclick="del('i',${id})">🗑 Delete</button>
+      </td>`;
+  });
+}
+
+// ── Patch renderAll to add data-id and rebuild ─────────
+const _origRA2 = renderAll;
+renderAll = function(){
+  _origRA2();
+  // Add data-id to rows after render
+  setTimeout(()=>{
+    ['pay-tb','bin-tb','exp-tb','inv-tb'].forEach(tbId => {
+      const tb = document.getElementById(tbId);
+      if(!tb) return;
+      const arrs = {
+        'pay-tb': pays, 'bin-tb': bins,
+        'exp-tb': exps, 'inv-tb': invs
+      };
+      const arr = arrs[tbId] || [];
+      tb.querySelectorAll('tr').forEach((row, i) => {
+        if(arr[i]) row.setAttribute('data-id', arr[i].id);
+      });
+    });
+    rebuildForMobile();
+  }, 60);
+};
+
+// Rebuild on resize too
+window.addEventListener('resize', ()=>{ renderAll(); });
 </script>
 
 </body>

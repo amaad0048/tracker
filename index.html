@@ -1066,33 +1066,74 @@ async function sheetsPost(body){
 // ── Parse rows from Sheets into JS objects ──
 function parsePayouts(rows){
   return rows.map(r=>({
-    id:Number(r[0]),date:r[1],platform:r[2],challenge:r[3]||'',
-    usdt:N(r[4]),fee:N(r[5]),netUsdt:N(r[6]),rate:N(r[7]),pkr:N(r[8]),note:r[10]||''
+    id:Number(r[0]),
+    date:r[1]||'',
+    platform:r[2]||'',
+    challenge:r[3]||'',
+    usdt:N(r[4]),
+    fee:N(r[5]),
+    netUsdt:N(r[6]),
+    rate:N(r[7]),
+    pkr:N(r[8]),
+    // r[9] = cumulative (skip)
+    note:r[10]||''
   }));
 }
 function parseBins(rows){
   return rows.map(r=>({
-    id:Number(r[0]),date:r[1],type:r[2],gross:N(r[3]),fee:N(r[4]),
-    netUsdt:N(r[5]),rate:N(r[6]),pkr:N(r[7]),bank:r[8]||'',note:r[9]||''
+    id:Number(r[0]),
+    date:r[1]||'',
+    type:r[2]||'',
+    gross:N(r[3]),
+    fee:N(r[4]),
+    netUsdt:N(r[5]),
+    rate:N(r[6]),
+    pkr:N(r[7]),
+    bank:r[8]||'',
+    note:r[9]||''
   }));
 }
 function parseExps(rows){
   return rows.map(r=>({
-    id:Number(r[0]),date:r[1],desc:r[2],cat:r[3],pkr:N(r[4]),
-    method:r[5],usd:N(r[6]),note:r[8]||''
+    id:Number(r[0]),
+    date:r[1]||'',
+    desc:r[2]||'',
+    cat:r[3]||'',
+    pkr:N(r[4]),
+    method:r[5]||'',
+    usd:N(r[6]),
+    // r[7] = cumulative (calculated, skip)
+    note:r[8]||''
   }));
 }
 function parseInvs(rows){
   return rows.map(r=>({
-    id:Number(r[0]),date:r[1],name:r[2],type:r[3],amount:N(r[4]),note:r[5]||''
+    id:Number(r[0]),
+    date:r[1]||'',
+    name:r[2]||'',
+    type:r[3]||'',
+    amount:N(r[4]),
+    note:r[5]||''
   }));
 }
 
 // ── Build row arrays for Sheets ──
-function payRow(p,cum){return[p.id,p.date,p.platform,p.challenge,p.usdt,p.fee,p.netUsdt,p.rate,p.pkr,cum,p.note];}
-function binRow(b){return[b.id,b.date,b.type,b.gross,b.fee,b.netUsdt,b.rate,b.pkr,b.bank,b.note];}
-function expRow(e,cum,rate){return[e.id,e.date,e.desc,e.cat,e.pkr,e.method,(e.pkr/rate).toFixed(2),cum,e.note];}
-function invRow(i){return[i.id,i.date,i.name,i.type,i.amount,i.note];}
+function payRow(p,cum){
+  // Cols: ID | Date | Platform | Challenge | USDT | Fee | Net USDT | Rate | PKR | Cumulative PKR | Note
+  return[p.id, p.date, p.platform, p.challenge||'', p.usdt, p.fee, p.netUsdt, p.rate, p.pkr, cum, p.note||''];
+}
+function binRow(b){
+  // Cols: ID | Date | Type | Gross USDT | Fee | Net USDT | Rate | PKR Received | Bank | Note
+  return[b.id, b.date, b.type, b.gross, b.fee, b.netUsdt, b.rate, b.pkr, b.bank||'', b.note||''];
+}
+function expRow(e,cum,rate){
+  // Cols: ID | Date | Description | Category | PKR | Method | USD Equiv | Cumulative PKR | Note
+  return[e.id, e.date, e.desc, e.cat, e.pkr, e.method||'', (e.pkr/(rate||300)).toFixed(2), cum, e.note||''];
+}
+function invRow(i){
+  // Cols: ID | Date | Asset Name | Type | Invested PKR | Note
+  return[i.id, i.date, i.name, i.type, i.amount, i.note||''];
+}
 
 // ══════════════════════════════════════════
 // LOAD DATA FROM SHEETS

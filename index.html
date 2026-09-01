@@ -1215,18 +1215,66 @@ function editRow(store, rawId) {
 }
 
 // ── FILL MODAL — safe version ─────────────────────────
-function fillM(id,d){
-  const s=(eid,v)=>{const el=document.getElementById(eid);if(el)el.value=v??'';};
-  const sel=(selId,val)=>{
-    const sel=document.getElementById(selId);if(!sel||!val)return;
-    let found=false;
-    for(let o of sel.options){if(o.value===val||o.text===val){sel.value=o.value;found=true;break;}}
-    if(!found){const o=document.createElement('option');o.value=val;o.text=val;sel.insertBefore(o,sel.querySelector('[value="__c__"]')||null);sel.value=val;}
-  };
-  if(id==='mp'){s('mp-id',d.id);s('mp-date',d.date);sel('mp-plat',d.platform);s('mp-chal',d.challenge);s('mp-usdt',d.usdt);s('mp-fee',d.fee);s('mp-rate',d.rate);s('mp-note',d.note);cP();}
-  else if(id==='mb'){s('mb-id',d.id);s('mb-date',d.date);sel('mb-type',d.type);s('mb-usdt',d.gross);s('mb-fee',d.fee);s('mb-rate',d.rate);sel('mb-bank',d.bank);s('mb-note',d.note);cB();}
-  else if(id==='me'){s('me-id',d.id);s('me-date',d.date);sel('me-cat',d.cat);s('me-desc',d.desc);s('me-pkr',d.pkr);sel('me-meth',d.method);s('me-note',d.note);}
-  else if(id==='mi'){s('mi-id',d.id);s('mi-date',d.date);sel('mi-type',d.type);s('mi-name',d.name);s('mi-amt',d.amount);s('mi-note',d.note);}
+function fillM(modalId, d){
+  function sv2(eid, v){
+    var el = document.getElementById(eid);
+    if(el) el.value = (v !== null && v !== undefined) ? String(v) : '';
+  }
+  function ssOpt(selId, val){
+    var sel = document.getElementById(selId);
+    if(!sel || val === null || val === undefined || val === '') return;
+    var strVal = String(val);
+    var found = false;
+    for(var j = 0; j < sel.options.length; j++){
+      if(sel.options[j].value === strVal || sel.options[j].text === strVal){
+        sel.value = sel.options[j].value;
+        found = true; break;
+      }
+    }
+    if(!found && strVal){
+      var o = document.createElement('option');
+      o.value = strVal; o.text = strVal;
+      var cust = sel.querySelector('[value="__c__"]');
+      sel.insertBefore(o, cust || null);
+      sel.value = strVal;
+    }
+  }
+  if(modalId === 'mp'){
+    sv2('mp-id',   d.id);
+    sv2('mp-date', cleanDate(d.date));
+    ssOpt('mp-plat', d.platform);
+    sv2('mp-chal', d.challenge || '');
+    sv2('mp-usdt', d.usdt);
+    sv2('mp-fee',  d.fee);
+    sv2('mp-rate', d.rate);
+    sv2('mp-note', d.note || '');
+    cP();
+  } else if(modalId === 'mb'){
+    sv2('mb-id',   d.id);
+    sv2('mb-date', cleanDate(d.date));
+    ssOpt('mb-type', d.type);
+    sv2('mb-usdt', d.gross);
+    sv2('mb-fee',  d.fee);
+    sv2('mb-rate', d.rate);
+    ssOpt('mb-bank', d.bank || '');
+    sv2('mb-note', d.note || '');
+    cB();
+  } else if(modalId === 'me'){
+    sv2('me-id',   d.id);
+    sv2('me-date', cleanDate(d.date));
+    ssOpt('me-cat', d.cat);
+    sv2('me-desc', d.desc);
+    sv2('me-pkr',  d.pkr);
+    ssOpt('me-meth', d.method);
+    sv2('me-note', d.note || '');
+  } else if(modalId === 'mi'){
+    sv2('mi-id',   d.id);
+    sv2('mi-date', cleanDate(d.date));
+    ssOpt('mi-type', d.type);
+    sv2('mi-name', d.name);
+    sv2('mi-amt',  d.amount);
+    sv2('mi-note', d.note || '');
+  }
 }
 function closeM(id){document.getElementById(id).classList.remove('on');resetM(id);editMode=false;editId=null;}
 function resetM(id){const m=document.getElementById(id);m.querySelectorAll('input:not([type=date])').forEach(i=>i.value='');m.querySelectorAll('input[type=date]').forEach(i=>i.value='');m.querySelectorAll('select').forEach(s=>s.selectedIndex=0);m.querySelectorAll('.fcw').forEach(d=>d.style.display='none');}

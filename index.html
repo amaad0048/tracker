@@ -490,26 +490,47 @@ select option{background:var(--s1)}
   .shell { height: calc(100dvh - 48px - 56px); }
 }
 
-/* FIX 3: Mobile dashboard summary bar — left-aligned, not centre */
+/* FIX 3: Mobile dashboard summary bar — proper grid with label, PKR, USD */
 @media(max-width:768px){
-  .sum-bar { border-radius: var(--r2); padding: 12px 14px; }
+  .sum-bar {
+    border-radius: var(--r2);
+    padding: 4px 14px;
+    flex-direction: column;
+    gap: 0;
+  }
   .sum-seg {
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid !important;
+    grid-template-columns: 1fr auto auto;
+    grid-template-rows: auto auto;
     align-items: center;
-    padding: 9px 0;
+    padding: 10px 0;
     border-bottom: 0.5px solid var(--b0);
     border-right: none;
-    gap: 0;
+    gap: 0 10px;
   }
   .sum-seg:last-child { border-bottom: none; }
   .sum-lbl {
-    font-size: 10px; font-weight: 700; letter-spacing: .06em;
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 9px; font-weight: 700; letter-spacing: .07em;
     text-transform: uppercase; color: var(--t2);
-    margin-bottom: 0; text-align: left;
+    margin-bottom: 0; white-space: nowrap;
   }
-  .sum-val { font-size: 15px; text-align: right; }
-  .sum-sub { display: none; }
+  .sum-val {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    font-size: 16px; font-weight: 700;
+    text-align: right; white-space: nowrap;
+    align-self: center;
+  }
+  .sum-sub {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 9px; color: var(--t2);
+    font-family: var(--fm);
+    display: block !important;
+    white-space: nowrap;
+  }
 }
 
 /* FIX 4: Collapsible rows — base styles */

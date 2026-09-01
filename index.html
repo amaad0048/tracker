@@ -1204,9 +1204,9 @@ async function savePay(){
   const btn=document.getElementById('mp-btn');btn.textContent='Saving…';btn.disabled=true;
   if(editMode){
     const obj={id:editId,date,platform,challenge,usdt,fee,netUsdt:net,rate,pkr:pkrV,note};
-    const i=pays.findIndex(x=>x.id==editId);if(i>=0)pays[i]=obj;
+    const i=pays.findIndex(x=>Number(x.id)===Number(editId));if(i>=0)pays[i]=obj;
     let cum=0;const row=payRow(obj,pays.slice(0,i+1).reduce((s,p)=>s+p.pkr,0));
-    await sheetsPost({action:'update',sheet:'Payouts',id:editId,row});
+    await sheetsPost({action:'update',sheet:'Payouts',id:Number(editId),row});
     toast('Payout updated ✓','mn');
   } else {
     const id=Date.now();const obj={id,date,platform,challenge,usdt,fee,netUsdt:net,rate,pkr:pkrV,note};
@@ -1232,8 +1232,8 @@ async function saveBin(){
   const btn=document.getElementById('mb-btn');btn.textContent='Saving…';btn.disabled=true;
   if(editMode){
     const obj={id:editId,date,type,gross,fee,netUsdt:net,rate,pkr:pkrV,bank,note};
-    const i=bins.findIndex(x=>x.id==editId);if(i>=0)bins[i]=obj;
-    await sheetsPost({action:'update',sheet:'Binance',id:editId,row:binRow(obj)});
+    const i=bins.findIndex(x=>Number(x.id)===Number(editId));if(i>=0)bins[i]=obj;
+    await sheetsPost({action:'update',sheet:'Binance',id:Number(editId),row:binRow(obj)});
     toast('Withdrawal updated ✓','mn');
   } else {
     const id=Date.now();const obj={id,date,type,gross,fee,netUsdt:net,rate,pkr:pkrV,bank,note};
@@ -1256,9 +1256,9 @@ async function saveExp(){
   const btn=document.getElementById('me-btn');btn.textContent='Saving…';btn.disabled=true;
   if(editMode){
     const obj={id:editId,date,cat,desc,pkr:pkrV,method,usd:usdV,note};
-    const i=exps.findIndex(x=>x.id==editId);if(i>=0)exps[i]=obj;
+    const i=exps.findIndex(x=>Number(x.id)===Number(editId));if(i>=0)exps[i]=obj;
     let cum=exps.slice(0,i+1).reduce((s,e)=>s+e.pkr,0);
-    await sheetsPost({action:'update',sheet:'Expenses',id:editId,row:expRow(obj,cum,rate)});
+    await sheetsPost({action:'update',sheet:'Expenses',id:Number(editId),row:expRow(obj,cum,rate)});
     toast('Expense updated ✓','mn');
   } else {
     const id=Date.now();const obj={id,date,cat,desc,pkr:pkrV,method,usd:usdV,note};
@@ -1281,8 +1281,8 @@ async function saveInv(){
   const btn=document.getElementById('mi-btn');btn.textContent='Saving…';btn.disabled=true;
   if(editMode){
     const obj={id:editId,date,type,name,amount,note};
-    const i=invs.findIndex(x=>x.id==editId);if(i>=0)invs[i]=obj;
-    await sheetsPost({action:'update',sheet:'Investments',id:editId,row:invRow(obj)});
+    const i=invs.findIndex(x=>Number(x.id)===Number(editId));if(i>=0)invs[i]=obj;
+    await sheetsPost({action:'update',sheet:'Investments',id:Number(editId),row:invRow(obj)});
     toast('Investment updated ✓','mn');
   } else {
     const id=Date.now();const obj={id,date,type,name,amount,note};
@@ -1300,7 +1300,7 @@ async function del(store,id){
   if(!confirm('Delete this entry permanently?'))return;
   const sheets={p:'Payouts',b:'Binance',e:'Expenses',i:'Investments'};
   const arrs={p:pays,b:bins,e:exps,i:invs};
-  const arr=arrs[store];const idx=arr.findIndex(x=>x.id===id);
+  const arr=arrs[store];const idx=arr.findIndex(x=>Number(x.id)===Number(id));
   if(idx<0)return;arr.splice(idx,1);
   await sheetsPost({action:'delete',sheet:sheets[store],id});
   renderAll();toast('Entry deleted','vi');
@@ -1336,9 +1336,9 @@ function rDash(){
   const ce=document.getElementById('d-cats');
   ce.innerHTML=Object.keys(cats).length?Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>`<div class="cb-row"><div class="cb-top"><span class="cb-lbl">${cat}<span class="cb-pct">${(amt/totE*100).toFixed(0)}%</span></span><span class="cb-val">${pkr(amt)}</span></div><div class="cb-track"><div class="cb-fill" style="width:${(amt/max*100).toFixed(1)}%;background:${bc[cat]||'var(--t2)'}"></div></div></div>`).join(''):'<div class="empty" style="padding:14px 0"><span class="empty-s">No expenses yet</span></div>';
   const rp=document.getElementById('d-pays');
-  rp.innerHTML=[...pays].slice(-6).reverse().map(p=>`<tr><td class="mono" style="color:var(--t2);font-size:11px">${p.date}</td><td><span class="badge bm">${p.platform}</span></td><td class="r mono c-mn">${usd(p.netUsdt)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty" style="padding:14px"><span class="empty-s">No payouts</span></div></td></tr>';
+  rp.innerHTML=[...pays].slice(-6).reverse().map(p=>`<tr><td class="mono" style="color:var(--t2);font-size:11px">${fmtDate(p.date)}</td><td><span class="badge bm">${p.platform}</span></td><td class="r mono c-mn">${usd(p.netUsdt)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty" style="padding:14px"><span class="empty-s">No payouts</span></div></td></tr>';
   const re=document.getElementById('d-exps');
-  re.innerHTML=[...exps].slice(-6).reverse().map(e=>`<tr><td class="mono" style="color:var(--t2);font-size:11px">${e.date}</td><td style="font-size:12px">${e.desc}</td><td><span class="badge br" style="font-size:9px">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty" style="padding:14px"><span class="empty-s">No expenses</span></div></td></tr>';
+  re.innerHTML=[...exps].slice(-6).reverse().map(e=>`<tr><td class="mono" style="color:var(--t2);font-size:11px">${fmtDate(e.date)}</td><td style="font-size:12px">${e.desc}</td><td><span class="badge br" style="font-size:9px">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td></tr>`).join('')||'<tr><td colspan="4"><div class="empty" style="padding:14px"><span class="empty-s">No expenses</span></div></td></tr>';
 }
 
 function rPay(){
@@ -1349,7 +1349,7 @@ function rPay(){
   const tb=document.getElementById('pay-tb');
   if(!pays.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><span class="empty-ico">💰</span><div class="empty-t">No payouts yet</div></div></td></tr>';return;}
   let cum=0;
-  tb.innerHTML=pays.map((p,i)=>{cum+=p.pkr;return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${p.date}</td><td><span class="badge bm">${p.platform}</span></td><td style="color:var(--t2);font-size:11px">${p.challenge||'—'}</td><td class="r mono c-mn">${p.usdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.fee.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${p.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.rate.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${p.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mp','edit',pays.find(x=>x.id===${p.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('p',${p.id})">🗑</button></div></td></tr>`;}).join('');
+  tb.innerHTML=pays.map((p,i)=>{cum+=p.pkr;return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(p.date)}</td><td><span class="badge bm">${p.platform}</span></td><td style="color:var(--t2);font-size:11px">${p.challenge||'—'}</td><td class="r mono c-mn">${p.usdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.fee.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${p.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.rate.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${p.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mp','edit',pays.find(x=>Number(x.id)===Number(${p.id})))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('p',Number(${p.id}))">🗑</button></div></td></tr>`;}).join('');
 }
 
 function rBin(){
@@ -1359,7 +1359,7 @@ function rBin(){
   document.getElementById('b-rem').textContent=(eU-tU).toFixed(2)+' USDT';
   const tb=document.getElementById('bin-tb');
   if(!bins.length){tb.innerHTML='<tr><td colspan="11"><div class="empty"><span class="empty-ico">🔶</span><div class="empty-t">No withdrawals yet</div></div></td></tr>';return;}
-  tb.innerHTML=bins.map((b,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${b.date}</td><td><span class="badge bs">${b.type}</span></td><td class="r mono c-am">${b.gross.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.fee.toFixed(2)}</td><td class="r mono c-mn">${b.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.rate.toFixed(2)}</td><td class="r mono c-sk" style="font-weight:700">${pkr(b.pkr)}</td><td style="font-size:11px">${b.bank||'—'}</td><td style="color:var(--t2);font-size:11px">${b.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mb','edit',bins.find(x=>x.id===${b.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('b',${b.id})">🗑</button></div></td></tr>`).join('');
+  tb.innerHTML=bins.map((b,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(b.date)}</td><td><span class="badge bs">${b.type}</span></td><td class="r mono c-am">${b.gross.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.fee.toFixed(2)}</td><td class="r mono c-mn">${b.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.rate.toFixed(2)}</td><td class="r mono c-sk" style="font-weight:700">${pkr(b.pkr)}</td><td style="font-size:11px">${b.bank||'—'}</td><td style="color:var(--t2);font-size:11px">${b.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mb','edit',bins.find(x=>Number(x.id)===Number(${b.id})))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('b',Number(${b.id}))">🗑</button></div></td></tr>`).join('');
 }
 
 function rExp(){
@@ -1374,7 +1374,7 @@ function rExp(){
   const tb=document.getElementById('exp-tb');
   if(!exps.length){tb.innerHTML='<tr><td colspan="10"><div class="empty"><span class="empty-ico">💸</span><div class="empty-t">No expenses yet</div></div></td></tr>';return;}
   let cum=0;
-  tb.innerHTML=exps.map((e,i)=>{cum+=e.pkr;const cc=catCls[e.cat]||'bd';return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${e.date}</td><td>${e.desc}</td><td><span class="badge ${cc}">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td><td><span class="badge bd">${e.method}</span></td><td class="r mono" style="color:var(--t2)">${usd(e.pkr/rate)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${e.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('me','edit',exps.find(x=>x.id===${e.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('e',${e.id})">🗑</button></div></td></tr>`;}).join('');
+  tb.innerHTML=exps.map((e,i)=>{cum+=e.pkr;const cc=catCls[e.cat]||'bd';return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(e.date)}</td><td>${e.desc}</td><td><span class="badge ${cc}">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td><td><span class="badge bd">${e.method}</span></td><td class="r mono" style="color:var(--t2)">${usd(e.pkr/rate)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${e.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('me','edit',exps.find(x=>Number(x.id)===Number(${e.id})))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('e',Number(${e.id}))">🗑</button></div></td></tr>`;}).join('');
 }
 
 function rInv(){
@@ -1384,7 +1384,7 @@ function rInv(){
   document.getElementById('i-typ').textContent=types.length;
   const tb=document.getElementById('inv-tb');
   if(!invs.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><span class="empty-ico">📈</span><div class="empty-t">No investments yet</div></div></td></tr>';return;}
-  tb.innerHTML=invs.map((v,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${v.date}</td><td style="font-weight:600;color:var(--am2)">${v.name}</td><td><span class="badge ba">${v.type}</span></td><td class="r mono c-am" style="font-weight:700">${pkr(v.amount)}</td><td style="color:var(--t2);font-size:11px">${v.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mi','edit',invs.find(x=>x.id===${v.id}))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('i',${v.id})">🗑</button></div></td></tr>`).join('');
+  tb.innerHTML=invs.map((v,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(v.date)}</td><td style="font-weight:600;color:var(--am2)">${v.name}</td><td><span class="badge ba">${v.type}</span></td><td class="r mono c-am" style="font-weight:700">${pkr(v.amount)}</td><td style="color:var(--t2);font-size:11px">${v.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="openM('mi','edit',invs.find(x=>Number(x.id)===Number(${v.id})))">✏ Edit</button><button class="ra-btn ra-d" onclick="del('i',Number(${v.id}))">🗑</button></div></td></tr>`).join('');
 }
 
 function badges(){
@@ -1571,6 +1571,28 @@ setTimeout(labelTables, 1000);
 
 
 <script>
+
+// ── DATE FORMATTER ─────────────────────────────────────
+function fmtDate(raw) {
+  if (!raw) return '—';
+  // Handle ISO strings, extract just the date part
+  const str = String(raw).trim();
+  // Get YYYY-MM-DD from any format
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return str;
+  const [_, y, m, d] = match;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+}
+
+// ── Also fix date inputs — strip time when pre-filling ──
+function cleanDate(raw) {
+  if (!raw) return '';
+  const str = String(raw).trim();
+  const match = str.match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : str;
+}
+
 // ── COLLAPSIBLE ROWS (mobile) ─────────────────────────
 function isMobile(){ return window.innerWidth <= 768; }
 
@@ -1605,7 +1627,7 @@ function rebuildForMobile(){
       <td class="td-summary" onclick="toggleRow(this.parentElement)">
         <div>
           <div style="font-weight:700;font-size:13px;color:var(--t0)">${pkr}</div>
-          <div style="font-size:10px;color:var(--t2);margin-top:2px">${platform} · ${date.substring(0,10)}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">${platform} · ${fmtDate(date)}</div>
         </div>
         <span class="chev-btn" style="font-size:16px;color:var(--t2)">▸</span>
       </td>
@@ -1641,7 +1663,7 @@ function rebuildForMobile(){
       <td class="td-summary" onclick="toggleRow(this.parentElement)">
         <div>
           <div style="font-weight:700;font-size:13px;color:var(--t0)">${pkr}</div>
-          <div style="font-size:10px;color:var(--t2);margin-top:2px">${type} · ${date.substring(0,10)}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:2px">${type} · ${fmtDate(date)}</div>
         </div>
         <span class="chev-btn" style="font-size:16px;color:var(--t2)">▸</span>
       </td>
@@ -1677,7 +1699,7 @@ function rebuildForMobile(){
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:13px;color:var(--rs2)">${pkr}</div>
           <div style="font-size:11px;color:var(--t0);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${desc}</div>
-          <div style="font-size:10px;color:var(--t2);margin-top:1px">${date.substring(0,10)}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:1px">${fmtDate(date)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           ${cat}
@@ -1712,7 +1734,7 @@ function rebuildForMobile(){
         <div>
           <div style="font-weight:700;font-size:13px;color:var(--am2)">${amt}</div>
           <div style="font-size:11px;color:var(--t0);margin-top:1px">${name}</div>
-          <div style="font-size:10px;color:var(--t2);margin-top:1px">${date.substring(0,10)}</div>
+          <div style="font-size:10px;color:var(--t2);margin-top:1px">${fmtDate(date)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           ${type}

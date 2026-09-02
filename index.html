@@ -1195,22 +1195,33 @@ function openM(id,mode,data){
   if(mode==='edit'&&data)fillM(id,data);
 }
 
-// ── EDIT ROW — safe lookup by ID ──────────────────────
+// ── EDIT ROW — reads data from DOM row attribute ──────
 function editRow(store, rawId) {
   const id = Number(rawId);
-  const maps = { p: pays, b: bins, e: exps, i: invs };
   const mods = { p: 'mp', b: 'mb', e: 'me', i: 'mi' };
-  const arr = maps[store];
   const mod = mods[store];
-  if (!arr || !mod) { toast('Unknown section', 'rs'); return; }
+  if (!mod) { toast('Unknown section', 'rs'); return; }
 
-  // Find by numeric ID comparison
-  const item = arr.find(x => Number(x.id) === id);
-  if (!item) {
-    toast('Entry not found — try refreshing', 'rs');
-    console.error('editRow: id not found', id, arr.map(x=>x.id));
+  // Find the TR with matching data-id
+  const tbIds = { p: 'pay-tb', b: 'bin-tb', e: 'exp-tb', i: 'inv-tb' };
+  const tb = document.getElementById(tbIds[store]);
+  if (!tb) { toast('Table not found', 'rs'); return; }
+
+  // Find row by data-id attribute
+  const row = tb.querySelector('tr[data-id="' + id + '"]');
+  if (!row) {
+    toast('Row not found — try refreshing', 'rs');
+    console.error('editRow: row not found for id', id);
     return;
   }
+
+  // Read data from data-json attribute stored on the row
+  const jsonStr = row.getAttribute('data-json');
+  if (!jsonStr) {
+    toast('No data on row — try refreshing', 'rs');
+    return;
+  }
+  const item = JSON.parse(jsonStr);
   openM(mod, 'edit', item);
 }
 
@@ -1460,7 +1471,7 @@ function rPay(){
   const tb=document.getElementById('pay-tb');
   if(!pays.length){tb.innerHTML='<tr><td colspan="12"><div class="empty"><span class="empty-ico">💰</span><div class="empty-t">No payouts yet</div></div></td></tr>';return;}
   let cum=0;
-  tb.innerHTML=pays.map((p,i)=>{cum+=p.pkr;return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(p.date)}</td><td><span class="badge bm">${p.platform}</span></td><td style="color:var(--t2);font-size:11px">${p.challenge||'—'}</td><td class="r mono c-mn">${p.usdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.fee.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${p.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.rate.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${p.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('p',${p.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('p',${p.id})">🗑</button></div></td></tr>`;}).join('');
+  tb.innerHTML=pays.map((p,i)=>{cum+=p.pkr;return`<tr data-id="${p.id}" data-json='${JSON.stringify(p).replace(/'/g,"&#39;")}'><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(p.date)}</td><td><span class="badge bm">${p.platform}</span></td><td style="color:var(--t2);font-size:11px">${p.challenge||'—'}</td><td class="r mono c-mn">${p.usdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.fee.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${p.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${p.rate.toFixed(2)}</td><td class="r mono c-mn" style="font-weight:700">${pkr(p.pkr)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${p.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('p',${p.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('p',${p.id})">🗑</button></div></td></tr>`;}).join('');
 }
 
 function rBin(){
@@ -1470,7 +1481,7 @@ function rBin(){
   document.getElementById('b-rem').textContent=(eU-tU).toFixed(2)+' USDT';
   const tb=document.getElementById('bin-tb');
   if(!bins.length){tb.innerHTML='<tr><td colspan="11"><div class="empty"><span class="empty-ico">🔶</span><div class="empty-t">No withdrawals yet</div></div></td></tr>';return;}
-  tb.innerHTML=bins.map((b,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(b.date)}</td><td><span class="badge bs">${b.type}</span></td><td class="r mono c-am">${b.gross.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.fee.toFixed(2)}</td><td class="r mono c-mn">${b.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.rate.toFixed(2)}</td><td class="r mono c-sk" style="font-weight:700">${pkr(b.pkr)}</td><td style="font-size:11px">${b.bank||'—'}</td><td style="color:var(--t2);font-size:11px">${b.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('b',${b.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('b',${b.id})">🗑</button></div></td></tr>`).join('');
+  tb.innerHTML=bins.map((b,i)=>`<tr data-id="${b.id}" data-json='${JSON.stringify(b).replace(/'/g,"&#39;")}'><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(b.date)}</td><td><span class="badge bs">${b.type}</span></td><td class="r mono c-am">${b.gross.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.fee.toFixed(2)}</td><td class="r mono c-mn">${b.netUsdt.toFixed(2)}</td><td class="r mono" style="color:var(--t2)">${b.rate.toFixed(2)}</td><td class="r mono c-sk" style="font-weight:700">${pkr(b.pkr)}</td><td style="font-size:11px">${b.bank||'—'}</td><td style="color:var(--t2);font-size:11px">${b.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('b',${b.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('b',${b.id})">🗑</button></div></td></tr>`).join('');
 }
 
 function rExp(){
@@ -1485,7 +1496,7 @@ function rExp(){
   const tb=document.getElementById('exp-tb');
   if(!exps.length){tb.innerHTML='<tr><td colspan="10"><div class="empty"><span class="empty-ico">💸</span><div class="empty-t">No expenses yet</div></div></td></tr>';return;}
   let cum=0;
-  tb.innerHTML=exps.map((e,i)=>{cum+=e.pkr;const cc=catCls[e.cat]||'bd';return`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(e.date)}</td><td>${e.desc}</td><td><span class="badge ${cc}">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td><td><span class="badge bd">${e.method}</span></td><td class="r mono" style="color:var(--t2)">${usd(e.pkr/rate)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${e.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('e',${e.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('e',${e.id})">🗑</button></div></td></tr>`;}).join('');
+  tb.innerHTML=exps.map((e,i)=>{cum+=e.pkr;const cc=catCls[e.cat]||'bd';return`<tr data-id="${e.id}" data-json='${JSON.stringify(e).replace(/'/g,"&#39;")}'><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(e.date)}</td><td>${e.desc}</td><td><span class="badge ${cc}">${e.cat}</span></td><td class="r mono c-rs" style="font-weight:700">${pkr(e.pkr)}</td><td><span class="badge bd">${e.method}</span></td><td class="r mono" style="color:var(--t2)">${usd(e.pkr/rate)}</td><td class="r mono" style="color:var(--t2)">${pkr(cum)}</td><td style="color:var(--t2);font-size:11px">${e.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('e',${e.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('e',${e.id})">🗑</button></div></td></tr>`;}).join('');
 }
 
 function rInv(){
@@ -1495,7 +1506,7 @@ function rInv(){
   document.getElementById('i-typ').textContent=types.length;
   const tb=document.getElementById('inv-tb');
   if(!invs.length){tb.innerHTML='<tr><td colspan="7"><div class="empty"><span class="empty-ico">📈</span><div class="empty-t">No investments yet</div></div></td></tr>';return;}
-  tb.innerHTML=invs.map((v,i)=>`<tr><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(v.date)}</td><td style="font-weight:600;color:var(--am2)">${v.name}</td><td><span class="badge ba">${v.type}</span></td><td class="r mono c-am" style="font-weight:700">${pkr(v.amount)}</td><td style="color:var(--t2);font-size:11px">${v.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('i',${v.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('i',${v.id})">🗑</button></div></td></tr>`).join('');
+  tb.innerHTML=invs.map((v,i)=>`<tr data-id="${v.id}" data-json='${JSON.stringify(v).replace(/'/g,"&#39;")}'><td class="mono" style="color:var(--t3);font-size:11px">${i+1}</td><td class="mono" style="color:var(--t2)">${fmtDate(v.date)}</td><td style="font-weight:600;color:var(--am2)">${v.name}</td><td><span class="badge ba">${v.type}</span></td><td class="r mono c-am" style="font-weight:700">${pkr(v.amount)}</td><td style="color:var(--t2);font-size:11px">${v.note||'—'}</td><td><div class="ra"><button class="ra-btn ra-e" onclick="editRow('i',${v.id})">✏ Edit</button><button class="ra-btn ra-d" onclick="del('i',${v.id})">🗑</button></div></td></tr>`).join('');
 }
 
 function badges(){
